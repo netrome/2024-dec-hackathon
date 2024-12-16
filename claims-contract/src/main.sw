@@ -6,10 +6,12 @@ use std::context::this_balance;
 use std::auth::msg_sender;
 use std::asset::transfer;
 use std::block::height;
+use std::storage::storage_vec::*;
 
 use std::hash::Hash;
 
 struct Claim {
+    id: u64,
     owner: Address,
     recipient: Address,
     asset: AssetId,
@@ -21,7 +23,7 @@ storage {
     claim_counter: u64 = 0,
 
     claims: StorageMap<u64, Claim> = StorageMap{},
-    //claims_by_address: StorageMap<Address, Vec<Claim>> = StorageMap{},
+    claims_by_address: StorageMap<Address, StorageVec<Claim>> = StorageMap{},
 }
 
 enum InvalidError {
@@ -56,6 +58,7 @@ impl ClaimsContract for Contract {
         let asset = msg_asset_id();
 
         let claim = Claim {
+            id: claim_id,
             owner,
             recipient,
             asset,
@@ -64,6 +67,13 @@ impl ClaimsContract for Contract {
         };
 
         storage.claims.insert(claim_id, claim);
+
+        match storage.claims_by_address.get(owner).try_read() {
+            Some(_) => (),
+            None => storage.claims_by_address.insert(owner, StorageVec {}),
+        };
+        storage.claims_by_address.get(owner).push(claim);
+        
         storage.claim_counter.write(claim_id + 1);
     }
 
@@ -76,6 +86,18 @@ impl ClaimsContract for Contract {
         
         let contract_balance = this_balance(claim.asset);
         require(contract_balance >= claim.amount, InvalidError::NotEnoughTokens(contract_balance));
+
+        let mut idx = 0;
+        let len = storage.claims_by_address.get(claim.owner).len();
+
+        // Ugh...
+        while idx < len {
+            if storage.claims_by_address.get(claim.owner).get(idx).unwrap().try_read().unwrap().id == claim.id {
+                let _ = storage.claims_by_address.get(claim.owner).remove(idx);
+            } else {
+                idx += 1;
+            }
+        }
 
         let _ = storage.claims.remove(claim_id);
         transfer(Identity::Address(claim.owner), claim.asset, claim.amount);
@@ -95,12 +117,34 @@ impl ClaimsContract for Contract {
         let contract_balance = this_balance(claim.asset);
         require(contract_balance >= claim.amount, InvalidError::NotEnoughTokens(contract_balance));
 
+        // Ugh...
+        while idx < len {
+            if storage.claims_by_address.get(claim.owner).get(idx).unwrap().try_read().unwrap().id == claim.id {
+                let _ = storage.claims_by_address.get(claim.owner).remove(idx);
+            } else {
+                idx += 1;
+            }
+        }
+
         let _ = storage.claims.remove(claim_id);
         transfer(Identity::Address(claim.recipient), claim.asset, claim.amount);
     }
 
     #[storage(read)]
     fn get_claims(addr: Address) -> Vec<Claim> {
-        Vec::new()
+        let len = storage.claims_by_address.get(addr).len();
+        let mut idx = 0;
+
+        let mut output = Vec::new();
+
+        while idx < len {
+            let claim = storage.claims_by_address.get(addr).get(idx).unwrap().try_read().unwrap();
+
+            output.push(claim);
+
+            idx += 1;
+        }
+
+        output
     }
 }

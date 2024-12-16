@@ -65,8 +65,6 @@ async fn can_initiate_claim() {
         .await
         .unwrap();
 
-    println!("Claims: {claims:?}");
     assert!(claims.value.len() == 1);
-
-    // Now you have an instance of your contract you can use to test each function
+    assert!(claims.value.get(0).unwrap().owner == owner.address().into());
 }

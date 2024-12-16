@@ -21,6 +21,7 @@ storage {
     claim_counter: u64 = 0,
 
     claims: StorageMap<u64, Claim> = StorageMap{},
+    //claims_by_address: StorageMap<Address, Vec<Claim>> = StorageMap{},
 }
 
 enum InvalidError {
@@ -39,6 +40,10 @@ abi ClaimsContract {
 
     #[storage(read, write)]
     fn fulfill(claim_id: u64);
+
+    // 🤔 Do we really need this method on-chain?
+    #[storage(read)]
+    fn get_claims(addr: Address) -> Vec<Claim>;
 }
 
 impl ClaimsContract for Contract {
@@ -92,5 +97,10 @@ impl ClaimsContract for Contract {
 
         let _ = storage.claims.remove(claim_id);
         transfer(Identity::Address(claim.recipient), claim.asset, claim.amount);
+    }
+
+    #[storage(read)]
+    fn get_claims(addr: Address) -> Vec<Claim> {
+        Vec::new()
     }
 }

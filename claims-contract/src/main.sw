@@ -34,8 +34,8 @@ enum InvalidError {
 }
 
 abi ClaimsContract {
-    #[storage(read, write)]
-    fn initiate_claim(owner: Address, recipient: Address);
+    #[storage(read, write), payable]
+    fn initiate_claim(owner: Address, recipient: Address) -> u64;
 
     #[storage(read, write)]
     fn disprove(claim_id: u64);
@@ -49,8 +49,8 @@ abi ClaimsContract {
 }
 
 impl ClaimsContract for Contract {
-    #[storage(read, write)]
-    fn initiate_claim(owner: Address, recipient: Address) {
+    #[storage(read, write), payable]
+    fn initiate_claim(owner: Address, recipient: Address) -> u64{
         let claim_id = storage.claim_counter.read();
         let block_height = 0;
 
@@ -75,6 +75,8 @@ impl ClaimsContract for Contract {
         storage.claims_by_address.get(owner).push(claim);
         
         storage.claim_counter.write(claim_id + 1);
+
+        claim_id
     }
 
     #[storage(read, write)]
@@ -87,13 +89,13 @@ impl ClaimsContract for Contract {
         let contract_balance = this_balance(claim.asset);
         require(contract_balance >= claim.amount, InvalidError::NotEnoughTokens(contract_balance));
 
+        // Ugh...
         let mut idx = 0;
         let len = storage.claims_by_address.get(claim.owner).len();
-
-        // Ugh...
         while idx < len {
             if storage.claims_by_address.get(claim.owner).get(idx).unwrap().try_read().unwrap().id == claim.id {
                 let _ = storage.claims_by_address.get(claim.owner).remove(idx);
+                break;
             } else {
                 idx += 1;
             }
@@ -118,9 +120,12 @@ impl ClaimsContract for Contract {
         require(contract_balance >= claim.amount, InvalidError::NotEnoughTokens(contract_balance));
 
         // Ugh...
+        let mut idx = 0;
+        let len = storage.claims_by_address.get(claim.owner).len();
         while idx < len {
             if storage.claims_by_address.get(claim.owner).get(idx).unwrap().try_read().unwrap().id == claim.id {
                 let _ = storage.claims_by_address.get(claim.owner).remove(idx);
+                break;
             } else {
                 idx += 1;
             }

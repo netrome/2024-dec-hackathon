@@ -1,4 +1,4 @@
-# Project: Quarantine enabled wallet
+# Project: Reclaimable funds
 
 ## Functionality
 * View balances

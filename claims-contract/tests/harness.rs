@@ -48,12 +48,17 @@ async fn can_initiate_claim() {
 
     let owner = wallets.pop().unwrap();
     let recipient = wallets.pop().unwrap();
+    let amount = 10_000;
+
+    let call_params = CallParameters::default().with_amount(amount);
 
     instance
         .clone()
         .with_account(owner.clone())
         .methods()
         .initiate_claim(owner.address(), recipient.address())
+        .call_params(call_params)
+        .unwrap()
         .call()
         .await
         .unwrap();
@@ -65,6 +70,43 @@ async fn can_initiate_claim() {
         .await
         .unwrap();
 
+    let contract_balance = *instance.get_balances().await.unwrap().get(&AssetId::zeroed()).unwrap();
+    assert_eq!(contract_balance, amount);
+
     assert!(claims.value.len() == 1);
-    assert!(claims.value.get(0).unwrap().owner == owner.address().into());
+    assert_eq!(claims.value.get(0).unwrap().owner, owner.address().into());
+    assert_eq!(claims.value.get(0).unwrap().amount, amount);
+}
+
+#[tokio::test]
+async fn can_disprove_claim() {
+    let (instance, _id, mut wallets) = get_contract_instance().await;
+
+    let owner = wallets.pop().unwrap();
+    let recipient = wallets.pop().unwrap();
+
+    let call_params = CallParameters::default().with_amount(10_000);
+
+    let claim_id = instance
+        .clone()
+        .with_account(owner.clone())
+        .methods()
+        .initiate_claim(owner.address(), recipient.address())
+        .call_params(call_params)
+        .unwrap()
+        .call()
+        .await
+        .unwrap()
+        .value;
+
+    let res = instance
+        .with_account(owner)
+        .methods()
+        .disprove(claim_id)
+        .with_variable_output_policy(VariableOutputPolicy::Exactly(1))
+        .call()
+        .await;
+
+    println!("Res: {res:?}");
+    res.unwrap();
 }

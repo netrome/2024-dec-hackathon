@@ -2,3 +2,4 @@
 
 - Declaration order matters in Sway (have do define "Claim" before "storage").
 - Can't import modules.
+- The licenses are weird. Can we really publish `fuels` under Apache-2 when `fuel-core` uses the `BUSL-1.1` license?

@@ -13,6 +13,15 @@ abigen!(Predicate(
     abi = "out/debug/claimable-abi.json"
 ));
 
+mod claims_contract {
+    use fuels::prelude::*;
+
+    abigen!(Contract(
+        name = "ClaimsContract",
+        abi = "../claims-contract/out/debug/claims-contract-abi.json"
+    ));
+}
+
 async fn setup_wallets_and_network() -> (Vec<WalletUnlocked>, Provider, AssetId) {
     // WALLETS
     let private_key_0: SecretKey =
@@ -162,4 +171,9 @@ async fn owner_can_spend_claimable_predicate() -> Result<()> {
     );
 
     Ok(())
+}
+
+#[tokio::test]
+async fn recepient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<()> {
+    todo!();
 }

@@ -98,16 +98,24 @@ async fn can_disprove_claim() {
         .unwrap()
         .value;
 
-    let res = instance
+    instance
+        .clone()
         .with_account(owner)
         .methods()
         .disprove(claim_id)
         .with_variable_output_policy(VariableOutputPolicy::Exactly(1))
         .call()
-        .await;
+        .await
+        .expect("should be able to disprove");
 
-    println!("Res: {res:?}");
-    res.unwrap();
+    let contract_balance = *instance
+        .get_balances()
+        .await
+        .unwrap()
+        .get(&AssetId::zeroed())
+        .unwrap();
+
+    assert_eq!(contract_balance, 0);
 }
 
 #[tokio::test]
@@ -143,5 +151,53 @@ async fn cant_fulfill_claim_before_min_height_reached() {
         panic!("expected reverted transaction")
     };
 
-    assert_eq!(reason, "TooSoon(3600)");
+    assert_eq!(reason, "TooSoon(112)");
+}
+
+#[tokio::test]
+async fn can_fulfill_claim_after_min_height_reached() {
+    let (instance, _id, mut wallets) = get_contract_instance().await;
+
+    let owner = wallets.pop().unwrap();
+    let recipient = wallets.pop().unwrap();
+
+    let call_params = CallParameters::default().with_amount(10_000);
+
+    let claim_id = instance
+        .clone()
+        .with_account(owner.clone())
+        .methods()
+        .initiate_claim(owner.address(), recipient.address())
+        .call_params(call_params)
+        .unwrap()
+        .call()
+        .await
+        .unwrap()
+        .value;
+
+    owner
+        .provider()
+        .unwrap()
+        .produce_blocks(112, None)
+        .await
+        .expect("should be able to produce blocks");
+
+    instance
+        .clone()
+        .with_account(recipient)
+        .methods()
+        .fulfill(claim_id)
+        .with_variable_output_policy(VariableOutputPolicy::Exactly(1))
+        .call()
+        .await
+        .expect("should be able to fulfill");
+
+    let contract_balance = *instance
+        .get_balances()
+        .await
+        .unwrap()
+        .get(&AssetId::zeroed())
+        .unwrap();
+
+    assert_eq!(contract_balance, 0);
 }

@@ -16,8 +16,8 @@ configurable {
     OWNER: Address = Address::from(ZERO_B256),
 }
 
-fn verify_signature() -> bool {
-    if (tx_witnesses_count() <= 1) {
+fn has_owner_signature() -> bool {
+    if (tx_witnesses_count() < 1) {
         return false;
     }
 
@@ -29,5 +29,5 @@ fn verify_signature() -> bool {
 
     
 fn main() -> bool {
-    verify_signature()
+    has_owner_signature()
 }

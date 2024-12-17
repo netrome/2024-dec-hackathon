@@ -1,13 +1,14 @@
-use fuels::{prelude::*, types::ContractId};
+use fuels::{
+    prelude::*,
+    types::{errors::transaction::Reason, ContractId},
+};
 
-// Load abi from json
 abigen!(Contract(
     name = "MyContract",
     abi = "out/debug/claims-contract-abi.json"
 ));
 
 async fn get_contract_instance() -> (MyContract<WalletUnlocked>, ContractId, Vec<WalletUnlocked>) {
-    // Launch a local network and deploy the contract
     let mut wallets = launch_custom_provider_and_get_wallets(
         WalletsConfig::new(
             Some(3),             /* Single wallet */
@@ -33,13 +34,6 @@ async fn get_contract_instance() -> (MyContract<WalletUnlocked>, ContractId, Vec
     let instance = MyContract::new(id.clone(), wallet);
 
     (instance, id.into(), wallets)
-}
-
-#[tokio::test]
-async fn can_get_contract_id() {
-    let (_instance, _id, _wallets) = get_contract_instance().await;
-
-    // Now you have an instance of your contract you can use to test each function
 }
 
 #[tokio::test]
@@ -70,7 +64,12 @@ async fn can_initiate_claim() {
         .await
         .unwrap();
 
-    let contract_balance = *instance.get_balances().await.unwrap().get(&AssetId::zeroed()).unwrap();
+    let contract_balance = *instance
+        .get_balances()
+        .await
+        .unwrap()
+        .get(&AssetId::zeroed())
+        .unwrap();
     assert_eq!(contract_balance, amount);
 
     assert!(claims.value.len() == 1);
@@ -109,4 +108,40 @@ async fn can_disprove_claim() {
 
     println!("Res: {res:?}");
     res.unwrap();
+}
+
+#[tokio::test]
+async fn cant_fulfill_claim_before_min_height_reached() {
+    let (instance, _id, mut wallets) = get_contract_instance().await;
+
+    let owner = wallets.pop().unwrap();
+    let recipient = wallets.pop().unwrap();
+
+    let call_params = CallParameters::default().with_amount(10_000);
+
+    let claim_id = instance
+        .clone()
+        .with_account(owner.clone())
+        .methods()
+        .initiate_claim(owner.address(), recipient.address())
+        .call_params(call_params)
+        .unwrap()
+        .call()
+        .await
+        .unwrap()
+        .value;
+
+    let res = instance
+        .with_account(recipient)
+        .methods()
+        .fulfill(claim_id)
+        .with_variable_output_policy(VariableOutputPolicy::Exactly(1))
+        .call()
+        .await;
+
+    let Error::Transaction(Reason::Reverted { reason, .. }) = res.unwrap_err() else {
+        panic!("expected reverted transaction")
+    };
+
+    assert_eq!(reason, "TooSoon(3600)");
 }

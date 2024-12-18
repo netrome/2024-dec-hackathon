@@ -22,7 +22,16 @@ mod claims_contract {
     ));
 }
 
-async fn setup_wallets_and_network() -> (Vec<WalletUnlocked>, Provider, AssetId) {
+struct Harness {
+    wallet_0: WalletUnlocked,
+    wallet_1: WalletUnlocked,
+    wallet_2: WalletUnlocked,
+    provider: Provider,
+    asset_id: AssetId,
+    contract_instance: claims_contract::ClaimsContract<WalletUnlocked>,
+}
+
+async fn setup_wallets_and_network() -> Harness {
     // WALLETS
     let private_key_0: SecretKey =
         "0xc2620849458064e8f1eb2bc4c459f473695b443ac3134c82ddd4fd992bd138fd"
@@ -64,7 +73,26 @@ async fn setup_wallets_and_network() -> (Vec<WalletUnlocked>, Provider, AssetId)
             wallet.set_provider(provider.clone());
         });
 
-    return (vec![wallet_0, wallet_1, wallet_2], provider, asset_id);
+    // CONTRACT
+    let id = Contract::load_from(
+        "../claims-contract/out/debug/claims-contract.bin",
+        LoadConfiguration::default(),
+    )
+    .unwrap()
+    .deploy(&wallet_0, TxPolicies::default())
+    .await
+    .unwrap();
+
+    let contract_instance = claims_contract::ClaimsContract::new(id, wallet_0.clone());
+
+    return Harness {
+        wallet_0,
+        wallet_1,
+        wallet_2,
+        provider,
+        asset_id,
+        contract_instance,
+    };
 }
 
 async fn get_last_tx_fee(client: &FuelClient) -> u64 {
@@ -89,12 +117,12 @@ async fn get_last_tx_fee(client: &FuelClient) -> u64 {
 
 #[tokio::test]
 async fn owner_can_spend_claimable_predicate() -> Result<()> {
-    let (wallets, provider, asset_id) = setup_wallets_and_network().await;
-    let client = FuelClient::new(provider.url()).unwrap();
+    let harness = setup_wallets_and_network().await;
+    let client = FuelClient::new(harness.provider.url()).unwrap();
 
     // CONFIGURABLES
-    let owner_wallet = wallets.get(0).expect("no owner wallet");
-    let owner_address: Address = wallets[0].address().into();
+    let owner_wallet = harness.wallet_0;
+    let owner_address: Address = owner_wallet.address().into();
 
     let configurables = ClaimableConfigurables::default()
         .with_CLAIMS_CONTRACT_ADDRESS(Address::zeroed())?
@@ -103,20 +131,21 @@ async fn owner_can_spend_claimable_predicate() -> Result<()> {
     // PREDICATE
     let predicate_binary_path = "./out/debug/claimable.bin";
     let predicate: Predicate = Predicate::load_from(predicate_binary_path)?
-        .with_provider(provider.clone())
+        .with_provider(harness.provider.clone())
         .with_configurables(configurables);
 
     // FUND PREDICATE
     let claimable_amount = 100;
-    let wallet_0_amount = provider
-        .get_asset_balance(wallets[0].address(), asset_id)
+    let wallet_0_amount = harness
+        .provider
+        .get_asset_balance(owner_wallet.address(), harness.asset_id)
         .await?;
 
     owner_wallet
         .transfer(
             predicate.address(),
             claimable_amount,
-            asset_id,
+            harness.asset_id,
             TxPolicies::default(),
         )
         .await?;
@@ -125,11 +154,11 @@ async fn owner_can_spend_claimable_predicate() -> Result<()> {
     // BUILD TRANSACTION
     let mut tb: ScriptTransactionBuilder = {
         let input_coin = predicate
-            .get_asset_inputs_for_amount(asset_id, 1, None)
+            .get_asset_inputs_for_amount(harness.asset_id, 1, None)
             .await?;
         let output_coin = predicate.get_asset_outputs_for_amount(
-            wallets[0].address().into(),
-            asset_id,
+            owner_wallet.address(),
+            harness.asset_id,
             claimable_amount - 1,
         ); // minus 1 for gas
 
@@ -140,32 +169,39 @@ async fn owner_can_spend_claimable_predicate() -> Result<()> {
     tb.add_signer(owner_wallet.clone())?;
 
     assert_eq!(
-        provider
-            .get_asset_balance(predicate.address(), asset_id)
+        harness
+            .provider
+            .get_asset_balance(predicate.address(), harness.asset_id)
             .await?,
         claimable_amount
     );
     assert_eq!(
-        provider
-            .get_asset_balance(owner_wallet.address(), asset_id)
+        harness
+            .provider
+            .get_asset_balance(owner_wallet.address(), harness.asset_id)
             .await?,
         wallet_0_amount - claimable_amount - accumulated_fee
     );
 
     // SPEND PREDICATE
-    let tx: ScriptTransaction = tb.build(provider.clone()).await?;
-    provider.send_transaction_and_await_commit(tx).await?;
+    let tx: ScriptTransaction = tb.build(harness.provider.clone()).await?;
+    harness
+        .provider
+        .send_transaction_and_await_commit(tx)
+        .await?;
     accumulated_fee += get_last_tx_fee(&client).await;
 
     assert_eq!(
-        provider
-            .get_asset_balance(predicate.address(), asset_id)
+        harness
+            .provider
+            .get_asset_balance(predicate.address(), harness.asset_id)
             .await?,
         0
     );
     assert_eq!(
-        provider
-            .get_asset_balance(owner_wallet.address(), asset_id)
+        harness
+            .provider
+            .get_asset_balance(owner_wallet.address(), harness.asset_id)
             .await?,
         wallet_0_amount - accumulated_fee
     );

@@ -218,6 +218,9 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     let owner_wallet = harness.wallet_0;
     let owner_address: Address = owner_wallet.address().into();
 
+    let recipient_wallet = harness.wallet_1;
+    let recipient_address: Address = recipient_wallet.address().into();
+
     let configurables = ClaimableConfigurables::default()
         .with_CLAIMS_CONTRACT_ADDRESS(Address::zeroed())?
         .with_OWNER(owner_address)?;
@@ -244,6 +247,56 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
         )
         .await?;
     let mut accumulated_fee = get_last_tx_fee(&client).await;
+
+    // BUILD TRANSACTION
+    let input_coin = predicate
+        .get_asset_inputs_for_amount(harness.asset_id, 1, None)
+        .await?;
+
+    let output_coins =
+        predicate.get_asset_outputs_for_amount(owner_wallet.address(), harness.asset_id, 0);
+
+    ScriptTransactionBuilder::prepare_transfer(input_coin, output_coins, TxPolicies::default());
+
+    let call_parameters = CallParameters::default().with_amount(100);
+
+    let mut tb = harness
+        .contract_instance
+        .clone()
+        .with_account(owner_wallet.clone())
+        .methods()
+        .initiate_claim(owner_wallet.address(), recipient_wallet.address())
+        //.call_params(call_parameters)
+        //.unwrap()
+        .transaction_builder()
+        .await
+        .unwrap();
+
+    println!("TB: {tb:?}");
+    println!("TB inputs: {:?}", tb.inputs.len());
+    println!("TB outputs: {:?}", tb.outputs.len());
+    println!("Script: {:?}", tb.script_data);
+
+    owner_wallet.adjust_for_fee(&mut tb, 0).await.unwrap();
+
+    println!("TB: {tb:?}");
+    println!("TB inputs: {:?}", tb.inputs.len());
+    println!("TB outputs: {:?}", tb.outputs.len());
+    println!("Script: {:?}", tb.script_data);
+    panic!("NooO");
+
+    //let mut tb: ScriptTransactionBuilder = {
+    //    let input_coin = predicate
+    //        .get_asset_inputs_for_amount(harness.asset_id, 1, None)
+    //        .await?;
+    //    let output_coin = predicate.get_asset_outputs_for_amount(
+    //        owner_wallet.address(),
+    //        harness.asset_id,
+    //        claimable_amount - 1,
+    //    ); // minus 1 for gas
+
+    //    ScriptTransactionBuilder::prepare_transfer(input_coin, output_coin, TxPolicies::default())
+    //};
 
     Ok(())
 }

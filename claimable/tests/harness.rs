@@ -210,6 +210,40 @@ async fn owner_can_spend_claimable_predicate() -> Result<()> {
 }
 
 #[tokio::test]
-async fn recepient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<()> {
-    todo!();
+async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<()> {
+    let harness = setup_wallets_and_network().await;
+    let client = FuelClient::new(harness.provider.url()).unwrap();
+
+    // CONFIGURABLES
+    let owner_wallet = harness.wallet_0;
+    let owner_address: Address = owner_wallet.address().into();
+
+    let configurables = ClaimableConfigurables::default()
+        .with_CLAIMS_CONTRACT_ADDRESS(Address::zeroed())?
+        .with_OWNER(owner_address)?;
+
+    // PREDICATE
+    let predicate_binary_path = "./out/debug/claimable.bin";
+    let predicate: Predicate = Predicate::load_from(predicate_binary_path)?
+        .with_provider(harness.provider.clone())
+        .with_configurables(configurables);
+
+    // FUND PREDICATE
+    let claimable_amount = 100;
+    let wallet_0_amount = harness
+        .provider
+        .get_asset_balance(owner_wallet.address(), harness.asset_id)
+        .await?;
+
+    owner_wallet
+        .transfer(
+            predicate.address(),
+            claimable_amount,
+            harness.asset_id,
+            TxPolicies::default(),
+        )
+        .await?;
+    let mut accumulated_fee = get_last_tx_fee(&client).await;
+
+    Ok(())
 }

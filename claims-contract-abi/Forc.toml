@@ -1,0 +1,7 @@
+[project]
+authors = ["marten"]
+entry = "lib.sw"
+license = "Apache-2.0"
+name = "claims_contract_abi"
+
+[dependencies]

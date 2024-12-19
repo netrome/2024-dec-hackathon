@@ -279,37 +279,48 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
         .get_asset_inputs_for_amount(harness.asset_id, 1, None)
         .await?;
 
-    let output_coins =
-        predicate.get_asset_outputs_for_amount(owner_wallet.address(), harness.asset_id, 0);
+    //let output_coins =
+    //    predicate.get_asset_outputs_for_amount(owner_wallet.address(), harness.asset_id, 0);
 
-    ScriptTransactionBuilder::prepare_transfer(input_coin, output_coins, TxPolicies::default());
-
-    let call_parameters = CallParameters::default().with_amount(100);
-
-    let mut tb = harness
-        .contract_instance
-        .clone()
-        .with_account(owner_wallet.clone())
-        .methods()
-        .initiate_claim(owner_wallet.address(), recipient_wallet.address())
-        //.call_params(call_parameters)
-        //.unwrap()
-        .transaction_builder()
+    let res = harness
+        .script_instance
+        .main(recipient_address, 10, 5, harness.asset_id.into())
+        .with_inputs(input_coin)
+        .with_contracts(&[&harness.contract_instance])
+        .call()
         .await
         .unwrap();
 
-    println!("TB: {tb:?}");
-    println!("TB inputs: {:?}", tb.inputs.len());
-    println!("TB outputs: {:?}", tb.outputs.len());
-    println!("Script: {:?}", tb.script_data);
+    println!("Res: {:?}", res);
 
-    owner_wallet.adjust_for_fee(&mut tb, 0).await.unwrap();
+    //ScriptTransactionBuilder::prepare_transfer(input_coin, output_coins, TxPolicies::default());
 
-    println!("TB: {tb:?}");
-    println!("TB inputs: {:?}", tb.inputs.len());
-    println!("TB outputs: {:?}", tb.outputs.len());
-    println!("Script: {:?}", tb.script_data);
-    panic!("NooO");
+    //let call_parameters = CallParameters::default().with_amount(100);
+
+    //let mut tb = harness
+    //    .contract_instance
+    //    .clone()
+    //    .with_account(owner_wallet.clone())
+    //    .methods()
+    //    .initiate_claim(owner_wallet.address(), recipient_wallet.address())
+    //    //.call_params(call_parameters)
+    //    //.unwrap()
+    //    .transaction_builder()
+    //    .await
+    //    .unwrap();
+
+    //println!("TB: {tb:?}");
+    //println!("TB inputs: {:?}", tb.inputs.len());
+    //println!("TB outputs: {:?}", tb.outputs.len());
+    //println!("Script: {:?}", tb.script_data);
+
+    //owner_wallet.adjust_for_fee(&mut tb, 0).await.unwrap();
+
+    //println!("TB: {tb:?}");
+    //println!("TB inputs: {:?}", tb.inputs.len());
+    //println!("TB outputs: {:?}", tb.outputs.len());
+    //println!("Script: {:?}", tb.script_data);
+    //panic!("NooO");
 
     //let mut tb: ScriptTransactionBuilder = {
     //    let input_coin = predicate

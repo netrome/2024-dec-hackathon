@@ -4,14 +4,18 @@ use fuels::{
 };
 
 abigen!(Contract(
-    name = "MyContract",
+    name = "ClaimsContract",
     abi = "out/debug/claims-contract-abi.json"
 ));
 
-async fn get_contract_instance() -> (MyContract<WalletUnlocked>, ContractId, Vec<WalletUnlocked>) {
+async fn get_contract_instance() -> (
+    ClaimsContract<WalletUnlocked>,
+    ContractId,
+    Vec<WalletUnlocked>,
+) {
     let mut wallets = launch_custom_provider_and_get_wallets(
         WalletsConfig::new(
-            Some(3),             /* Single wallet */
+            Some(3),             /* Three wallets */
             Some(1),             /* Single coin (UTXO) */
             Some(1_000_000_000), /* Amount per coin */
         ),
@@ -31,7 +35,7 @@ async fn get_contract_instance() -> (MyContract<WalletUnlocked>, ContractId, Vec
     .await
     .unwrap();
 
-    let instance = MyContract::new(id.clone(), wallet);
+    let instance = ClaimsContract::new(id.clone(), wallet);
 
     (instance, id.into(), wallets)
 }

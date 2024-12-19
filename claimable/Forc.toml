@@ -2,7 +2,6 @@
 authors = ["marten"]
 entry = "main.sw"
 license = "Apache-2.0"
-name = "claims-contract"
+name = "claimable"
 
 [dependencies]
-claims_contract_abi = { path = "../claims-contract-abi" }

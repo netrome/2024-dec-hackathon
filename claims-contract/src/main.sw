@@ -10,14 +10,8 @@ use std::storage::storage_vec::*;
 
 use std::hash::Hash;
 
-struct Claim {
-    id: u64,
-    owner: Address,
-    recipient: Address,
-    asset: AssetId,
-    amount: u64,
-    block_height: u32,
-}
+use claims_contract_abi::ClaimsContract;
+use claims_contract_abi::Claim;
 
 storage {
     claim_counter: u64 = 0,
@@ -31,21 +25,6 @@ enum InvalidError {
     OnlyRecipient: Address,
     NotEnoughTokens: u64,
     TooSoon: u32,
-}
-
-abi ClaimsContract {
-    #[storage(read, write), payable]
-    fn initiate_claim(owner: Address, recipient: Address) -> u64;
-
-    #[storage(read, write)]
-    fn disprove(claim_id: u64);
-
-    #[storage(read, write)]
-    fn fulfill(claim_id: u64);
-
-    // 🤔 Do we really need this method on-chain?
-    #[storage(read)]
-    fn get_claims(addr: Address) -> Vec<Claim>;
 }
 
 impl ClaimsContract for Contract {

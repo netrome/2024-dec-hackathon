@@ -1,19 +1,19 @@
 [[package]]
-name = "claims-contract"
-source = "member"
-dependencies = [
-    "claims_contract_abi",
-    "std",
-]
-
-[[package]]
 name = "claims_contract_abi"
-source = "path+from-root-FB8F79FC92A39C1C"
+source = "path+from-root-10E679A7A1DC42D6"
 dependencies = ["std"]
 
 [[package]]
 name = "core"
 source = "path+from-root-6A8836696D55BC6E"
+
+[[package]]
+name = "make-claim"
+source = "member"
+dependencies = [
+    "claims_contract_abi",
+    "std",
+]
 
 [[package]]
 name = "std"

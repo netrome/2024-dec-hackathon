@@ -1,14 +1,6 @@
 [[package]]
-name = "claims-contract"
-source = "member"
-dependencies = [
-    "claims_contract_abi",
-    "std",
-]
-
-[[package]]
 name = "claims_contract_abi"
-source = "path+from-root-FB8F79FC92A39C1C"
+source = "member"
 dependencies = ["std"]
 
 [[package]]

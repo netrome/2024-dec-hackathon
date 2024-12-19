@@ -1,11 +1,6 @@
 use std::collections::HashMap;
 
-use fuels::{
-    crypto::SecretKey,
-    prelude::*,
-    tx::TxId,
-    types::{coin_type::CoinType, input::Input, Bits256},
-};
+use fuels::{crypto::SecretKey, prelude::*, tx::TxId, types::Bits256};
 
 #[derive(Debug, Clone)]
 pub struct Kpop {
@@ -42,7 +37,7 @@ impl Kpop {
         }
     }
 
-    pub async fn balance(&self) -> HashMap<String, u64> {
+    pub async fn predicate_balance(&self) -> HashMap<String, u64> {
         self.wallet
             .provider()
             .unwrap()
@@ -56,11 +51,7 @@ impl Kpop {
             .await
             .methods()
             .get_claims(&self.wallet.address().into())
-            .with_tx_policies(
-                TxPolicies::default()
-                    .with_script_gas_limit(10_000_000)
-                    .with_max_fee(10_000_000),
-            )
+            .with_tx_policies(TxPolicies::default().with_script_gas_limit(10_000_000))
             .simulate(Execution::Realistic)
             .await
             .unwrap()
@@ -116,6 +107,18 @@ impl Kpop {
             .expect("should be able to send transaction");
 
         txid
+    }
+
+    pub async fn disprove_claim(&self, claim_id: u64) {
+        self.contract_instance()
+            .await
+            .methods()
+            .disprove(claim_id)
+            .with_tx_policies(TxPolicies::default().with_script_gas_limit(10_000_000))
+            .with_variable_output_policy(VariableOutputPolicy::Exactly(1))
+            .call()
+            .await
+            .expect("shoule be able to disprove");
     }
 
     pub async fn claim(&self, owner: Address, asset_id: Option<AssetId>, amount: u64) -> u64 {
@@ -180,6 +183,7 @@ impl Kpop {
 
     async fn contract_instance(&self) -> claims_contract::ClaimsContract<WalletUnlocked> {
         claims_contract::ClaimsContract::new(self.contract_id, self.wallet.clone())
+            .with_account(self.wallet.clone())
     }
 }
 

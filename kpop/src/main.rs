@@ -24,10 +24,10 @@ async fn main() {
         None => kpop::Kpop::deploy(provider, pk).await,
     };
 
-    println!("Kpop: {:?}", kp);
+    //println!("Kpop: {:?}", kp);
 
     match args.action {
-        Action::Balance => balance(&kp).await,
+        Action::Balance => predicate_balance(&kp).await,
         Action::Predicate => predicate_address(&kp).await,
         Action::Wallet => wallet_address(&kp),
         Action::Claims => claims(&kp).await,
@@ -36,17 +36,17 @@ async fn main() {
             asset_id,
             amount,
         } => send_to(&kp, recipient, asset_id, amount).await,
-
         Action::Claim {
             owner,
             asset_id,
             amount,
         } => claim(&kp, owner, asset_id, amount).await,
+        Action::Disprove { claim_id } => disprove(&kp, claim_id).await,
     };
 }
 
-async fn balance(kp: &kpop::Kpop) {
-    let balance = kp.balance().await;
+async fn predicate_balance(kp: &kpop::Kpop) {
+    let balance = kp.predicate_balance().await;
     println!("Balance: {:?}", balance);
 }
 
@@ -88,6 +88,11 @@ async fn claim(kp: &kpop::Kpop, owner: String, asset_id: Option<String>, amount:
     println!("Made claim {claim_id}");
 }
 
+async fn disprove(kp: &kpop::Kpop, claim_id: u64) {
+    kp.disprove_claim(claim_id).await;
+    println!("Disproved claim {claim_id}")
+}
+
 #[derive(Parser)]
 struct Args {
     /// URL of Fuel node to connect to
@@ -127,5 +132,9 @@ enum Action {
         asset_id: Option<String>,
         #[arg(long)]
         amount: u64,
+    },
+    Disprove {
+        #[arg(long)]
+        claim_id: u64,
     },
 }

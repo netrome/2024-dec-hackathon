@@ -126,8 +126,6 @@ async fn setup_wallets_and_network() -> Harness {
     let contract_instance = claims_contract::ClaimsContract::new(id, wallet_0.clone());
 
     // SCRIPT
-    let script_binary_path = "../make-claim/out/debug/make-claim.bin";
-    let script_instance = make_claim_script::MakeClaim::new(wallet_1.clone(), &script_binary_path);
 
     let configurables = make_claim_script::MakeClaimConfigurables::default()
         .with_CLAIMS_CONTRACT_ADDRESS(Bits256(*contract_instance.contract_id().hash))
@@ -135,6 +133,8 @@ async fn setup_wallets_and_network() -> Harness {
         .with_OWNER(wallet_0.address().into())
         .unwrap();
 
+    let script_binary_path = "../make-claim/out/debug/make-claim.bin";
+    let script_instance = make_claim_script::MakeClaim::new(wallet_1.clone(), &script_binary_path);
     let script_instance = script_instance.with_configurables(configurables);
 
     return Harness {

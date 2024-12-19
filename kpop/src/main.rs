@@ -30,6 +30,7 @@ async fn main() {
         Action::Balance => balance(&kp).await,
         Action::Predicate => predicate_address(&kp).await,
         Action::Wallet => wallet_address(&kp),
+        Action::Claims => claims(&kp).await,
         Action::SendTo {
             recipient,
             asset_id,
@@ -50,6 +51,11 @@ async fn predicate_address(kp: &kpop::Kpop) {
 
 fn wallet_address(kp: &kpop::Kpop) {
     println!("Wallet address: {}", kp.wallet.address())
+}
+
+async fn claims(kp: &kpop::Kpop) {
+    let claims = kp.get_claims().await;
+    println!("Claims: {:?}", claims);
 }
 
 async fn send_to(kp: &kpop::Kpop, recipient: String, asset_id: Option<String>, amount: u64) {
@@ -87,6 +93,7 @@ enum Action {
     Balance,
     Predicate,
     Wallet,
+    Claims,
     SendTo {
         #[arg(long)]
         recipient: String,

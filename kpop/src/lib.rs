@@ -51,7 +51,12 @@ impl Kpop {
             .await
             .methods()
             .get_claims(&self.wallet.address().into())
-            .simulate(Execution::StateReadOnly)
+            .with_tx_policies(
+                TxPolicies::default()
+                    .with_script_gas_limit(10_000_000)
+                    .with_max_fee(10_000_000),
+            )
+            .simulate(Execution::Realistic)
             .await
             .unwrap()
             .value

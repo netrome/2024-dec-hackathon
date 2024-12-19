@@ -74,6 +74,24 @@ impl Kpop {
             .clone()
     }
 
+    pub async fn fund_predicate(&self, asset_id: Option<AssetId>, amount: u64) -> TxId {
+        let asset_id =
+            asset_id.unwrap_or_else(|| self.wallet.provider().unwrap().base_asset_id().clone());
+
+        let (txid, _) = self
+            .wallet
+            .transfer(
+                &self.predicate_address().await,
+                amount,
+                asset_id,
+                TxPolicies::default(),
+            )
+            .await
+            .expect("should be able to fund predicate");
+
+        txid
+    }
+
     pub async fn send_to(
         &self,
         address: &Bech32Address,

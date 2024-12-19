@@ -30,6 +30,7 @@ async fn main() {
         Action::Predicate => predicate_info(&kp).await,
         Action::Wallet => wallet_info(&kp).await,
         Action::Claims => claims(&kp).await,
+        Action::Fund { asset_id, amount } => fund(&kp, asset_id, amount).await,
         Action::SendTo {
             recipient,
             asset_id,
@@ -61,6 +62,15 @@ async fn wallet_info(kp: &kpop::Kpop) {
 async fn claims(kp: &kpop::Kpop) {
     let claims = kp.get_claims().await;
     println!("Claims: {:?}", claims);
+}
+
+async fn fund(kp: &kpop::Kpop, asset_id: Option<String>, amount: u64) {
+    let asset_id =
+        asset_id.map(|s| AssetId::from_str(&s).expect("asset_id should be a valid hex string"));
+
+    let txid = kp.fund_predicate(asset_id, amount).await;
+
+    println!("Transaction: {txid}");
 }
 
 async fn send_to(kp: &kpop::Kpop, recipient: String, asset_id: Option<String>, amount: u64) {
@@ -120,6 +130,12 @@ enum Action {
     Predicate,
     Wallet,
     Claims,
+    Fund {
+        #[arg(long)]
+        asset_id: Option<String>,
+        #[arg(long)]
+        amount: u64,
+    },
     SendTo {
         #[arg(long)]
         recipient: String,

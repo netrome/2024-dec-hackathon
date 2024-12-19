@@ -318,7 +318,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
 
     let res = harness
         .script_instance
-        .main(recipient_address, 30_000, 5, harness.asset_id.into())
+        .main(recipient_address, 30_000, 100, harness.asset_id.into())
         .with_inputs(input_coin)
         .with_contracts(&[&harness.contract_instance])
         .call()

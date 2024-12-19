@@ -130,6 +130,18 @@ impl Kpop {
             .expect("shoule be able to disprove");
     }
 
+    pub async fn fulfill_claim(&self, claim_id: u64) {
+        self.contract_instance()
+            .await
+            .methods()
+            .fulfill(claim_id)
+            .with_tx_policies(TxPolicies::default().with_script_gas_limit(10_000_000))
+            .with_variable_output_policy(VariableOutputPolicy::Exactly(1))
+            .call()
+            .await
+            .expect("shoule be able to fulfill");
+    }
+
     pub async fn claim(&self, owner: Address, asset_id: Option<AssetId>, amount: u64) -> u64 {
         let asset_id =
             asset_id.unwrap_or_else(|| self.wallet.provider().unwrap().base_asset_id().clone());

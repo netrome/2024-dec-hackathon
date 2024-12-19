@@ -41,6 +41,7 @@ async fn main() {
             amount,
         } => claim(&kp, owner, asset_id, amount).await,
         Action::Disprove { claim_id } => disprove(&kp, claim_id).await,
+        Action::Fulfill { claim_id } => fulfill(&kp, claim_id).await,
     };
 }
 
@@ -91,6 +92,11 @@ async fn disprove(kp: &kpop::Kpop, claim_id: u64) {
     println!("Disproved claim {claim_id}")
 }
 
+async fn fulfill(kp: &kpop::Kpop, claim_id: u64) {
+    kp.fulfill_claim(claim_id).await;
+    println!("Fulfilld claim {claim_id}")
+}
+
 #[derive(Parser)]
 struct Args {
     /// URL of Fuel node to connect to
@@ -131,6 +137,10 @@ enum Action {
         amount: u64,
     },
     Disprove {
+        #[arg(long)]
+        claim_id: u64,
+    },
+    Fulfill {
         #[arg(long)]
         claim_id: u64,
     },

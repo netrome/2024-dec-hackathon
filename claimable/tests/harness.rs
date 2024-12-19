@@ -49,6 +49,28 @@ struct Harness {
     script_instance: make_claim_script::MakeClaim<WalletUnlocked>,
 }
 
+async fn get_script_bytecode_hash(
+    script_instance: &make_claim_script::MakeClaim<WalletUnlocked>,
+) -> Bits256 {
+    use sha2::Digest;
+    use sha2::Sha256;
+
+    let tx = script_instance
+        .main(Address::zeroed(), 0, 0, Bits256::zeroed())
+        .build_tx()
+        .await
+        .unwrap();
+
+    let mut hasher = Sha256::new();
+    hasher.update(tx.script());
+    let result = hasher.finalize();
+    let hash = Bits256(result.try_into().unwrap());
+    let h = hex::encode(hash.0);
+    println!("Bits: {h}");
+
+    hash
+}
+
 async fn setup_wallets_and_network() -> Harness {
     // WALLETS
     let private_key_0: SecretKey =
@@ -105,11 +127,14 @@ async fn setup_wallets_and_network() -> Harness {
 
     // SCRIPT
     let script_binary_path = "../make-claim/out/debug/make-claim.bin";
+    let script_instance = make_claim_script::MakeClaim::new(wallet_1.clone(), &script_binary_path);
+
     let configurables = make_claim_script::MakeClaimConfigurables::default()
-        .with_CLAIMS_CONTRACT_ADDRESS(Bits256(*contract_instance.contract_id().hash))
+        .with_CLAIMS_CONTRACT_ADDRESS(get_script_bytecode_hash(&script_instance).await)
+        .unwrap()
+        .with_OWNER(wallet_0.address().into())
         .unwrap();
 
-    let script_instance = make_claim_script::MakeClaim::new(wallet_1.clone(), &script_binary_path);
     let script_instance = script_instance.with_configurables(configurables);
 
     return Harness {
@@ -276,6 +301,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
             TxPolicies::default(),
         )
         .await?;
+
     let mut accumulated_fee = get_last_tx_fee(&client).await;
 
     // BUILD TRANSACTION
@@ -316,16 +342,33 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     //let h = hex::encode(bits.0);
     //println!("Bits: {h}");
 
-    let res = harness
+    let claim_id = harness
         .script_instance
-        .main(recipient_address, 30_000, 100, harness.asset_id.into())
+        .main(recipient_address, 30_000, 90, harness.asset_id.into())
         .with_inputs(input_coin)
         .with_contracts(&[&harness.contract_instance])
         .call()
         .await
-        .unwrap();
+        .unwrap()
+        .value;
 
-    println!("Res: {:?}", res);
+    accumulated_fee += get_last_tx_fee(&client).await;
+
+    assert_eq!(claim_id, 0);
+
+    let claims = harness
+        .contract_instance
+        .methods()
+        .get_claims(recipient_address)
+        .call()
+        .await
+        .unwrap()
+        .value;
+
+    assert_eq!(claims.len(), 1);
+    assert_eq!(claims.get(0).unwrap().owner, owner_address);
+    assert_eq!(claims.get(0).unwrap().recipient, recipient_address);
+    assert_eq!(claims.get(0).unwrap().amount, 90);
 
     //ScriptTransactionBuilder::prepare_transfer(input_coin, output_coins, TxPolicies::default());
 

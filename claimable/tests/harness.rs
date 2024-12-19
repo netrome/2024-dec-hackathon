@@ -1,3 +1,5 @@
+use std::{fmt::Debug, hash::Hash};
+
 use fuels::{
     accounts::{predicate::Predicate, wallet::WalletUnlocked, Account},
     client::{FuelClient, PaginationRequest},
@@ -293,14 +295,25 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     //    .await
     //    .unwrap();
 
-    let res = harness
+    //let script = tb.script;
+
+    let tx = harness
         .script_instance
         .main(recipient_address, 30_000, 5, harness.asset_id.into())
         .with_inputs(input_coin)
         .with_contracts(&[&harness.contract_instance])
-        .call()
+        .build_tx()
         .await
         .unwrap();
+
+    //let res = harness
+    //    .script_instance
+    //    .main(recipient_address, 30_000, 5, harness.asset_id.into())
+    //    .with_inputs(input_coin)
+    //    .with_contracts(&[&harness.contract_instance])
+    //    .call()
+    //    .await
+    //    .unwrap();
 
     //println!("Res: {:?}", res);
 

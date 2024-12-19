@@ -258,7 +258,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
         .with_configurables(configurables);
 
     // FUND PREDICATE
-    let claimable_amount = 100;
+    let claimable_amount = 10000;
     let wallet_0_amount = harness
         .provider
         .get_asset_balance(owner_wallet.address(), harness.asset_id)
@@ -284,7 +284,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
 
     let res = harness
         .script_instance
-        .main(recipient_address, 10, 5, harness.asset_id.into())
+        .main(recipient_address, 30_000, 5, harness.asset_id.into())
         .with_inputs(input_coin)
         .with_contracts(&[&harness.contract_instance])
         .call()

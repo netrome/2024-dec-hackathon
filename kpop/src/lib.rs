@@ -37,6 +37,15 @@ impl Kpop {
         }
     }
 
+    pub async fn wallet_balance(&self) -> HashMap<String, u64> {
+        self.wallet
+            .provider()
+            .unwrap()
+            .get_balances(&self.wallet.address().into())
+            .await
+            .expect("should be able to get balances")
+    }
+
     pub async fn predicate_balance(&self) -> HashMap<String, u64> {
         self.wallet
             .provider()
@@ -204,8 +213,8 @@ async fn get_script_bytecode_hash(
     hasher.update(tx.script());
     let result = hasher.finalize();
     let hash = Bits256(result.try_into().unwrap());
-    let h = hex::encode(hash.0);
-    println!("Bits: {h}");
+    //let h = hex::encode(hash.0);
+    //println!("Bits: {h}");
 
     hash
 }

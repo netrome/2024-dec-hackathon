@@ -27,9 +27,8 @@ async fn main() {
     //println!("Kpop: {:?}", kp);
 
     match args.action {
-        Action::Balance => predicate_balance(&kp).await,
-        Action::Predicate => predicate_address(&kp).await,
-        Action::Wallet => wallet_address(&kp),
+        Action::Predicate => predicate_info(&kp).await,
+        Action::Wallet => wallet_info(&kp).await,
         Action::Claims => claims(&kp).await,
         Action::SendTo {
             recipient,
@@ -45,18 +44,17 @@ async fn main() {
     };
 }
 
-async fn predicate_balance(kp: &kpop::Kpop) {
+async fn predicate_info(kp: &kpop::Kpop) {
+    let address = kp.predicate_address().await;
+    println!("Predicate address: {}", address);
     let balance = kp.predicate_balance().await;
     println!("Balance: {:?}", balance);
 }
 
-async fn predicate_address(kp: &kpop::Kpop) {
-    let address = kp.predicate_address().await;
-    println!("Predicate address: {}", address);
-}
-
-fn wallet_address(kp: &kpop::Kpop) {
-    println!("Wallet address: {}", kp.wallet.address())
+async fn wallet_info(kp: &kpop::Kpop) {
+    println!("Wallet address: {}", kp.wallet.address());
+    let balance = kp.wallet_balance().await;
+    println!("Balance: {:?}", balance);
 }
 
 async fn claims(kp: &kpop::Kpop) {
@@ -113,7 +111,6 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Action {
-    Balance,
     Predicate,
     Wallet,
     Claims,

@@ -7,7 +7,7 @@ use fuels::{
     prelude::*,
     types::{
         transaction_builders::{BuildableTransaction, ScriptTransactionBuilder},
-        Bits256,
+        Bits256, Bytes32,
     },
 };
 
@@ -305,6 +305,16 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
         .build_tx()
         .await
         .unwrap();
+
+    use sha2::Digest;
+    use sha2::Sha256;
+
+    let mut hasher = Sha256::new();
+    hasher.update(tx.script());
+    let result = hasher.finalize();
+    let bits = Bits256(result.try_into().unwrap());
+    let h = hex::encode(bits.0);
+    println!("Bits: {h}");
 
     //let res = harness
     //    .script_instance

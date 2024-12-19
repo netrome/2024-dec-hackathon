@@ -36,6 +36,12 @@ async fn main() {
             asset_id,
             amount,
         } => send_to(&kp, recipient, asset_id, amount).await,
+
+        Action::Claim {
+            owner,
+            asset_id,
+            amount,
+        } => claim(&kp, owner, asset_id, amount).await,
     };
 }
 
@@ -70,6 +76,18 @@ async fn send_to(kp: &kpop::Kpop, recipient: String, asset_id: Option<String>, a
     println!("Trasaction: {txid}");
 }
 
+async fn claim(kp: &kpop::Kpop, owner: String, asset_id: Option<String>, amount: u64) {
+    let owner =
+        Bech32Address::from_str(&owner).expect("owner should be a bech32 formatted address");
+
+    let asset_id =
+        asset_id.map(|s| AssetId::from_str(&s).expect("asset_id should be a valid hex string"));
+
+    let claim_id = kp.claim(owner.into(), asset_id, amount).await;
+
+    println!("Made claim {claim_id}");
+}
+
 #[derive(Parser)]
 struct Args {
     /// URL of Fuel node to connect to
@@ -97,6 +115,14 @@ enum Action {
     SendTo {
         #[arg(long)]
         recipient: String,
+        #[arg(long)]
+        asset_id: Option<String>,
+        #[arg(long)]
+        amount: u64,
+    },
+    Claim {
+        #[arg(long)]
+        owner: String,
         #[arg(long)]
         asset_id: Option<String>,
         #[arg(long)]

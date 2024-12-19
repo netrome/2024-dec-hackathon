@@ -1,6 +1,11 @@
 use std::collections::HashMap;
 
-use fuels::{crypto::SecretKey, prelude::*, tx::TxId, types::Bits256};
+use fuels::{
+    crypto::SecretKey,
+    prelude::*,
+    tx::TxId,
+    types::{coin_type::CoinType, input::Input, Bits256},
+};
 
 #[derive(Debug, Clone)]
 pub struct Kpop {
@@ -122,11 +127,14 @@ impl Kpop {
             .await
             .expect("failed to get inputs");
 
+        let output_coins = predicate.get_asset_outputs_for_amount(predicate.address(), asset_id, 0);
+
         let claim_id = self
             .script_instance(owner)
             .await
-            .main(self.wallet.address(), 30_000, amount, asset_id.into())
+            .main(self.wallet.address(), 10_000_000, amount, asset_id.into())
             .with_inputs(input_coins)
+            .with_outputs(output_coins)
             .with_contracts(&[&self.contract_instance().await])
             .with_tx_policies(TxPolicies::default().with_script_gas_limit(10_000_000))
             .call()

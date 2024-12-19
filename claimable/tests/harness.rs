@@ -130,7 +130,7 @@ async fn setup_wallets_and_network() -> Harness {
     let script_instance = make_claim_script::MakeClaim::new(wallet_1.clone(), &script_binary_path);
 
     let configurables = make_claim_script::MakeClaimConfigurables::default()
-        .with_CLAIMS_CONTRACT_ADDRESS(get_script_bytecode_hash(&script_instance).await)
+        .with_CLAIMS_CONTRACT_ADDRESS(Bits256(*contract_instance.contract_id().hash))
         .unwrap()
         .with_OWNER(wallet_0.address().into())
         .unwrap();
@@ -277,7 +277,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     let script_hash_hex = include_str!("../../make-claim/out/debug/make-claim-bin-hash");
     dbg!(script_hash_hex);
     let configurables = claimable_predicate::ClaimableConfigurables::default()
-        .with_MAKE_CLAIM_SCRIPT_HASH(Bits256::from_hex_str(script_hash_hex).unwrap())?
+        .with_MAKE_CLAIM_SCRIPT_HASH(get_script_bytecode_hash(&harness.script_instance).await)?
         .with_OWNER(owner_address)?;
 
     // PREDICATE
@@ -342,6 +342,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     //let h = hex::encode(bits.0);
     //println!("Bits: {h}");
 
+    // -------------------------
     let claim_id = harness
         .script_instance
         .main(recipient_address, 30_000, 90, harness.asset_id.into())
@@ -369,6 +370,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     assert_eq!(claims.get(0).unwrap().owner, owner_address);
     assert_eq!(claims.get(0).unwrap().recipient, recipient_address);
     assert_eq!(claims.get(0).unwrap().amount, 90);
+    //-------------------------------------
 
     //ScriptTransactionBuilder::prepare_transfer(input_coin, output_coins, TxPolicies::default());
 

@@ -4,8 +4,8 @@ use fuels::{crypto::SecretKey, prelude::*, tx::TxId, types::Bits256};
 
 #[derive(Debug, Clone)]
 pub struct Kpop {
-    wallet: WalletUnlocked,
-    contract_id: ContractId,
+    pub wallet: WalletUnlocked,
+    pub contract_id: ContractId,
 }
 
 impl Kpop {
@@ -28,8 +28,13 @@ impl Kpop {
         }
     }
 
-    pub async fn load(_provider: Provider, _pk: SecretKey, _contract_id: ContractId) -> Self {
-        todo!();
+    pub fn load(provider: Provider, pk: SecretKey, contract_id: ContractId) -> Self {
+        let wallet = WalletUnlocked::new_from_private_key(pk, Some(provider));
+
+        Self {
+            wallet,
+            contract_id,
+        }
     }
 
     pub async fn balance(&self) -> HashMap<String, u64> {
@@ -52,11 +57,11 @@ impl Kpop {
             .value
     }
 
-    pub async fn predicate_address(&self) -> Address {
+    pub async fn predicate_address(&self) -> Bech32Address {
         self.predicate(self.wallet.address().into())
             .await
             .address()
-            .into()
+            .clone()
     }
 
     pub async fn send_to(
@@ -103,8 +108,32 @@ impl Kpop {
         txid
     }
 
+    pub async fn claim(&self, owner: Address, asset_id: Option<AssetId>, amount: u64) -> u64 {
+        let asset_id =
+            asset_id.unwrap_or_else(|| self.wallet.provider().unwrap().base_asset_id().clone());
+        let predicate = self.predicate(owner).await;
+        let input_coins = predicate
+            .get_asset_inputs_for_amount(asset_id, amount, None)
+            .await
+            .expect("failed to get inputs");
+
+        let claim_id = self
+            .script_instance(owner)
+            .await
+            .main(self.wallet.address(), 30_000, amount, asset_id.into())
+            .with_inputs(input_coins)
+            .with_contracts(&[&self.contract_instance().await])
+            .with_tx_policies(TxPolicies::default().with_script_gas_limit(10_000_000))
+            .call()
+            .await
+            .unwrap()
+            .value;
+
+        claim_id
+    }
+
     async fn predicate(&self, owner: Address) -> Predicate {
-        let predicate_binary_path = "./out/debug/claimable.bin";
+        let predicate_binary_path = "../claimable/out/debug/claimable.bin";
 
         let configurables = claimable_predicate::ClaimableConfigurables::default()
             .with_MAKE_CLAIM_SCRIPT_HASH(
@@ -149,6 +178,7 @@ async fn get_script_bytecode_hash(
 
     let tx = script_instance
         .main(Address::zeroed(), 0, 0, Bits256::zeroed())
+        .with_tx_policies(TxPolicies::default().with_script_gas_limit(10_000_000))
         .build_tx()
         .await
         .unwrap();

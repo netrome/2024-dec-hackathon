@@ -222,7 +222,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     let recipient_address: Address = recipient_wallet.address().into();
 
     let configurables = ClaimableConfigurables::default()
-        .with_CLAIMS_CONTRACT_ADDRESS(Address::zeroed())?
+        .with_MAKE_CLAIM_SCRIPT_HASH(fuels::types::Bits256::zeroed())?
         .with_OWNER(owner_address)?;
 
     // PREDICATE

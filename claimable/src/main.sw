@@ -4,7 +4,8 @@ use std::{
     tx::{
         tx_witness_data,
         tx_witnesses_count,
-        tx_id
+        tx_id,
+        tx_script_bytecode_hash,
     },
     constants::ZERO_B256,
     b512::B512,
@@ -12,7 +13,7 @@ use std::{
 };
 
 configurable {
-    CLAIMS_CONTRACT_ADDRESS: Address = Address::from(ZERO_B256),
+    MAKE_CLAIM_SCRIPT_HASH: b256 = ZERO_B256,
     OWNER: Address = Address::from(ZERO_B256),
 }
 
@@ -28,7 +29,7 @@ fn has_owner_signature() -> bool {
 }
 
 fn initiates_a_valid_claim() -> bool {
-    true
+    tx_script_bytecode_hash().unwrap() == MAKE_CLAIM_SCRIPT_HASH
 }
     
 fn main() -> bool {

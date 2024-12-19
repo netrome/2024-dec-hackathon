@@ -101,11 +101,11 @@ impl Kpop {
         let asset_id =
             asset_id.unwrap_or_else(|| self.wallet.provider().unwrap().base_asset_id().clone());
 
-        let gas = 10_000; // What is sensible?
+        //let gas = 100; // What is sensible?
 
         let predicate = self.predicate(self.wallet.address().into()).await;
         let input_coins = predicate
-            .get_asset_inputs_for_amount(asset_id, amount + gas, None)
+            .get_asset_inputs_for_amount(asset_id, amount, None)
             .await
             .expect("should be able to get inputs");
         let output_coin = predicate.get_asset_outputs_for_amount(address, asset_id, amount);
@@ -118,6 +118,11 @@ impl Kpop {
 
         tb.add_signer(self.wallet.clone())
             .expect("should be able to add signer");
+
+        self.wallet
+            .adjust_for_fee(&mut tb, 0)
+            .await
+            .expect("should be able to adjust for fee");
 
         let tx = tb
             .build(&self.wallet.provider().unwrap())

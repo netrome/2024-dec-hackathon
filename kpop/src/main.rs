@@ -24,9 +24,8 @@ async fn main() {
         None => kpop::Kpop::deploy(provider, pk).await,
     };
 
-    //println!("Kpop: {:?}", kp);
-
     match args.action {
+        Action::Info => println!("Kpop: {:?}", kp),
         Action::Predicate => predicate_info(&kp).await,
         Action::Wallet => wallet_info(&kp).await,
         Action::Claims => claims(&kp).await,
@@ -127,6 +126,7 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Action {
+    Info,
     Predicate,
     Wallet,
     Claims,

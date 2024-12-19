@@ -309,40 +309,6 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
         .get_asset_inputs_for_amount(harness.asset_id, 1, None)
         .await?;
 
-    //let output_coins =
-    //    predicate.get_asset_outputs_for_amount(owner_wallet.address(), harness.asset_id, 0);
-
-    //let tb = harness
-    //    .script_instance
-    //    .main(recipient_address, 30_000, 5, harness.asset_id.into())
-    //    .with_inputs(input_coin)
-    //    .with_contracts(&[&harness.contract_instance])
-    //    .transaction_builder()
-    //    .await
-    //    .unwrap();
-
-    //let script = tb.script;
-
-    //let tx = harness
-    //    .script_instance
-    //    .main(recipient_address, 30_000, 5, harness.asset_id.into())
-    //    .with_inputs(input_coin)
-    //    .with_contracts(&[&harness.contract_instance])
-    //    .build_tx()
-    //    .await
-    //    .unwrap();
-
-    //use sha2::Digest;
-    //use sha2::Sha256;
-
-    //let mut hasher = Sha256::new();
-    //hasher.update(tx.script());
-    //let result = hasher.finalize();
-    //let bits = Bits256(result.try_into().unwrap());
-    //let h = hex::encode(bits.0);
-    //println!("Bits: {h}");
-
-    // -------------------------
     let claim_id = harness
         .script_instance
         .main(recipient_address, 30_000, 90, harness.asset_id.into())
@@ -360,7 +326,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     let claims = harness
         .contract_instance
         .methods()
-        .get_claims(recipient_address)
+        .get_claims(owner_address)
         .call()
         .await
         .unwrap()
@@ -370,50 +336,6 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     assert_eq!(claims.get(0).unwrap().owner, owner_address);
     assert_eq!(claims.get(0).unwrap().recipient, recipient_address);
     assert_eq!(claims.get(0).unwrap().amount, 90);
-    //-------------------------------------
-
-    //ScriptTransactionBuilder::prepare_transfer(input_coin, output_coins, TxPolicies::default());
-
-    //let call_parameters = CallParameters::default().with_amount(100);
-
-    //let mut tb = harness
-    //    .contract_instance
-    //    .clone()
-    //    .with_account(owner_wallet.clone())
-    //    .methods()
-    //    .initiate_claim(owner_wallet.address(), recipient_wallet.address())
-    //    //.call_params(call_parameters)
-    //    //.unwrap()
-    //    .transaction_builder()
-    //    .await
-    //    .unwrap();
-
-    //println!("TB: {tb:?}");
-    //println!("TB inputs: {:?}", tb.inputs.len());
-    //println!("TB outputs: {:?}", tb.outputs.len());
-    //println!("Script: {:?}", tb.script_data);
-    //println!("Script hash: {:?}", tb.script);
-
-    //owner_wallet.adjust_for_fee(&mut tb, 0).await.unwrap();
-
-    //println!("TB: {tb:?}");
-    //println!("TB inputs: {:?}", tb.inputs.len());
-    //println!("TB outputs: {:?}", tb.outputs.len());
-    //println!("Script: {:?}", tb.script_data);
-    //panic!("NooO");
-
-    //let mut tb: ScriptTransactionBuilder = {
-    //    let input_coin = predicate
-    //        .get_asset_inputs_for_amount(harness.asset_id, 1, None)
-    //        .await?;
-    //    let output_coin = predicate.get_asset_outputs_for_amount(
-    //        owner_wallet.address(),
-    //        harness.asset_id,
-    //        claimable_amount - 1,
-    //    ); // minus 1 for gas
-
-    //    ScriptTransactionBuilder::prepare_transfer(input_coin, output_coin, TxPolicies::default())
-    //};
 
     Ok(())
 }

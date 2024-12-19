@@ -1,0 +1,12 @@
+[package]
+name = "kpop"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fuels = "0.66.2"
+fuel-core-client = { version = "0.40" }
+tokio = { version = "1.12", features = ["rt", "macros"] }
+sha2 = "0.10.8"
+hex = "0.4.3"
+clap = { version = "4.5.23", features = ["derive", "env"] }

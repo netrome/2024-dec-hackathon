@@ -31,7 +31,7 @@ impl ClaimsContract for Contract {
     #[storage(read, write), payable]
     fn initiate_claim(owner: Address, recipient: Address) -> u64{
         let claim_id = storage.claim_counter.read();
-        let block_height = 0;
+        let block_height = height();
 
         let amount = msg_amount();
         let asset = msg_asset_id();
@@ -88,7 +88,7 @@ impl ClaimsContract for Contract {
     fn fulfill(claim_id: u64) {
         let sender = msg_sender().unwrap().as_address().unwrap();
         let claim = storage.claims.get(claim_id).try_read().unwrap();
-        let min_height = claim.block_height + 112; // TODO: Add parameter
+        let min_height = claim.block_height + 120;
 
         require(min_height <= height(), InvalidError::TooSoon(min_height));
 

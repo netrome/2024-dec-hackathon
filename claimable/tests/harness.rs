@@ -3,15 +3,21 @@ use fuels::{
     client::{FuelClient, PaginationRequest},
     crypto::SecretKey,
     prelude::*,
-    types::transaction_builders::{BuildableTransaction, ScriptTransactionBuilder},
+    types::{
+        transaction_builders::{BuildableTransaction, ScriptTransactionBuilder},
+        Bits256,
+    },
 };
 
 use fuel_core_client::client::types::TransactionStatus;
 
-abigen!(Predicate(
-    name = "Claimable",
-    abi = "out/debug/claimable-abi.json"
-));
+mod claimable_predicate {
+    use fuels::prelude::*;
+    abigen!(Predicate(
+        name = "Claimable",
+        abi = "out/debug/claimable-abi.json"
+    ));
+}
 
 mod claims_contract {
     use fuels::prelude::*;
@@ -22,6 +28,15 @@ mod claims_contract {
     ));
 }
 
+mod make_claim_script {
+    use fuels::prelude::*;
+
+    abigen!(Script(
+        name = "MakeClaim",
+        abi = "../make-claim/out/debug/make-claim-abi.json",
+    ));
+}
+
 struct Harness {
     wallet_0: WalletUnlocked,
     wallet_1: WalletUnlocked,
@@ -29,6 +44,7 @@ struct Harness {
     provider: Provider,
     asset_id: AssetId,
     contract_instance: claims_contract::ClaimsContract<WalletUnlocked>,
+    script_instance: make_claim_script::MakeClaim<WalletUnlocked>,
 }
 
 async fn setup_wallets_and_network() -> Harness {
@@ -85,6 +101,15 @@ async fn setup_wallets_and_network() -> Harness {
 
     let contract_instance = claims_contract::ClaimsContract::new(id, wallet_0.clone());
 
+    // SCRIPT
+    let script_binary_path = "../make-claim/out/debug/make-claim.bin";
+    let configurables = make_claim_script::MakeClaimConfigurables::default()
+        .with_CLAIMS_CONTRACT_ADDRESS(Bits256(*contract_instance.contract_id().hash))
+        .unwrap();
+
+    let script_instance = make_claim_script::MakeClaim::new(wallet_1.clone(), &script_binary_path);
+    let script_instance = script_instance.with_configurables(configurables);
+
     return Harness {
         wallet_0,
         wallet_1,
@@ -92,6 +117,7 @@ async fn setup_wallets_and_network() -> Harness {
         provider,
         asset_id,
         contract_instance,
+        script_instance,
     };
 }
 
@@ -124,8 +150,8 @@ async fn owner_can_spend_claimable_predicate() -> Result<()> {
     let owner_wallet = harness.wallet_0;
     let owner_address: Address = owner_wallet.address().into();
 
-    let configurables = ClaimableConfigurables::default()
-        .with_CLAIMS_CONTRACT_ADDRESS(Address::zeroed())?
+    let configurables = claimable_predicate::ClaimableConfigurables::default()
+        .with_MAKE_CLAIM_SCRIPT_HASH(Bits256::zeroed())?
         .with_OWNER(owner_address)?;
 
     // PREDICATE
@@ -221,7 +247,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     let recipient_wallet = harness.wallet_1;
     let recipient_address: Address = recipient_wallet.address().into();
 
-    let configurables = ClaimableConfigurables::default()
+    let configurables = claimable_predicate::ClaimableConfigurables::default()
         .with_MAKE_CLAIM_SCRIPT_HASH(fuels::types::Bits256::zeroed())?
         .with_OWNER(owner_address)?;
 

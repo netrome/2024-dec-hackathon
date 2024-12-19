@@ -247,8 +247,10 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     let recipient_wallet = harness.wallet_1;
     let recipient_address: Address = recipient_wallet.address().into();
 
+    let script_hash_hex = include_str!("../../make-claim/out/debug/make-claim-bin-hash");
+    dbg!(script_hash_hex);
     let configurables = claimable_predicate::ClaimableConfigurables::default()
-        .with_MAKE_CLAIM_SCRIPT_HASH(fuels::types::Bits256::zeroed())?
+        .with_MAKE_CLAIM_SCRIPT_HASH(Bits256::from_hex_str(script_hash_hex).unwrap())?
         .with_OWNER(owner_address)?;
 
     // PREDICATE
@@ -291,16 +293,16 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
         .await
         .unwrap();
 
-    let res = harness
-        .script_instance
-        .main(recipient_address, 30_000, 5, harness.asset_id.into())
-        .with_inputs(input_coin)
-        .with_contracts(&[&harness.contract_instance])
-        .call()
-        .await
-        .unwrap();
+    //let res = harness
+    //    .script_instance
+    //    .main(recipient_address, 30_000, 5, harness.asset_id.into())
+    //    .with_inputs(input_coin)
+    //    .with_contracts(&[&harness.contract_instance])
+    //    .call()
+    //    .await
+    //    .unwrap();
 
-    println!("Res: {:?}", res);
+    //println!("Res: {:?}", res);
 
     //ScriptTransactionBuilder::prepare_transfer(input_coin, output_coins, TxPolicies::default());
 
@@ -322,6 +324,7 @@ async fn recipient_can_initiate_a_claim_from_a_claimable_predicate() -> Result<(
     println!("TB inputs: {:?}", tb.inputs.len());
     println!("TB outputs: {:?}", tb.outputs.len());
     println!("Script: {:?}", tb.script_data);
+    println!("Script hash: {:?}", tb.script);
 
     //owner_wallet.adjust_for_fee(&mut tb, 0).await.unwrap();
 

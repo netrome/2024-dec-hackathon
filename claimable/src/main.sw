@@ -31,7 +31,7 @@ fn has_owner_signature() -> bool {
 fn initiates_a_valid_claim() -> bool {
     //tx_script_bytecode_hash().unwrap() == MAKE_CLAIM_SCRIPT_HASH || true
     //tx_script_bytecode_hash().unwrap() == 0x1518a8dd619d27959d648689bd9e5a305c95de95e9c288e86e7f2bae456cc1c6
-    tx_script_bytecode_hash().unwrap() == 0x17947ac5a74b66207554fb37b97c14b1aa186b5c337c2dcf5bcf7c0862919fd0 || true
+    tx_script_bytecode_hash().unwrap() == 0x17947ac5a74b66207554fb37b97c14b1aa186b5c337c2dcf5bcf7c0862919fd0
 }
     
 fn main() -> bool {

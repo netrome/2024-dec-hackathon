@@ -60,13 +60,27 @@ pub fn App() -> impl IntoView {
 #[component]
 fn HomePage() -> impl IntoView {
     view! {
-        <h1>"KPOP WALLET!"</h1>
-        <MakeClaim />
-        <WalletBalances />
-        <PredicateBalances />
-        <WalletInfo />
-        <SendForm />
-        <FundForm />
+        <h1>"KPOP WALLET"</h1>
+        <div class="grid">
+            <div>
+                <WalletInfo />
+            </div>
+            <div>
+                <WalletBalances />
+                <PredicateBalances />
+            </div>
+        </div>
+        <div class="grid">
+            <div>
+                <FundForm />
+            </div>
+            <div>
+                <SendForm />
+            </div>
+            <div>
+                <MakeClaim />
+            </div>
+        </div>
         <Claims />
     }
 }

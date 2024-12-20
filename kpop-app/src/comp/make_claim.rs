@@ -1,8 +1,5 @@
 use leptos::prelude::*;
 
-#[cfg(feature = "ssr")]
-use crate::server::KpopServer;
-
 #[component]
 pub fn make_claim() -> impl IntoView {
     let claim_funds_action = ServerAction::<ClaimFunds>::new();
@@ -13,9 +10,9 @@ pub fn make_claim() -> impl IntoView {
                 <h3>"Claim funds"</h3>
             </header>
             <ActionForm action=claim_funds_action>
-                <label>"owner" <input type="text" name="owner" /></label>
-                <label>"asset" <input type="text" name="asset_id" /></label>
-                <label>"amount" <input type="number" name="amount" /></label>
+                <input placeholder="owner" type="text" name="owner" />
+                <input placeholder="asset" type="text" name="asset_id" />
+                <input placeholder="amount" type="number" name="amount" />
                 <input type="submit" value="Claim funds" />
             </ActionForm>
         </article>

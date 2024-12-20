@@ -19,7 +19,9 @@ pub fn claims() -> impl IntoView {
                     {move || {
                         claims_on_user
                             .get()
-                            .map(|res| res.map(|claims| view! { <ClaimsTable claims is_user=false /> }))
+                            .map(|res| {
+                                res.map(|claims| view! { <ClaimsTable claims is_user=false /> })
+                            })
                     }}
                 </article>
                 <article>
@@ -29,7 +31,9 @@ pub fn claims() -> impl IntoView {
                     {move || {
                         user_claims
                             .get()
-                            .map(|res| res.map(|claims| view! { <ClaimsTable claims is_user=true /> }))
+                            .map(|res| {
+                                res.map(|claims| view! { <ClaimsTable claims is_user=true /> })
+                            })
                     }}
                 </article>
             </ErrorBoundary>
@@ -58,20 +62,22 @@ pub fn claims_table(claims: Vec<model::Claim>, is_user: bool) -> impl IntoView {
     };
 
     view! {
-        <table>
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>"ID"</th>
-                    <th>"Block Height"</th>
-                    <th>"Asset ID"</th>
-                    <th>"Amount"</th>
-                    <th>"Recipient"</th>
-                    <th>"Owner"</th>
-                </tr>
-            </thead>
-            <tbody>{claim_rows}</tbody>
-        </table>
+        <div class="overflow-auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>"ID"</th>
+                        <th>"Block Height"</th>
+                        <th>"Asset ID"</th>
+                        <th>"Amount"</th>
+                        <th>"Recipient"</th>
+                        <th>"Owner"</th>
+                    </tr>
+                </thead>
+                <tbody>{claim_rows}</tbody>
+            </table>
+        </div>
     }
 }
 

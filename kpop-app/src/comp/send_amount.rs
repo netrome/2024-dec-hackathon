@@ -9,9 +9,9 @@ pub fn send_form() -> impl IntoView {
                 <h3>"Send to"</h3>
             </header>
             <ActionForm action=send_amount_action>
-                <label>"recipient" <input type="text" name="recipient" /></label>
-                <label>"asset" <input type="text" name="asset_id" /></label>
-                <label>"amount" <input type="number" name="amount" /></label>
+                <input placeholder="recipient" type="text" name="recipient" />
+                <input placeholder="asset" type="text" name="asset_id" />
+                <input placeholder="amount" type="number" name="amount" />
                 <input type="submit" value="Send funds" />
             </ActionForm>
         </article>

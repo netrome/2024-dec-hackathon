@@ -9,8 +9,8 @@ pub fn fund_form() -> impl IntoView {
                 <h3>"Fund predicate"</h3>
             </header>
             <ActionForm action=fund_predicate_action>
-                <label>"asset" <input type="text" name="asset_id" /></label>
-                <label>"amount" <input type="number" name="amount" /></label>
+                <input placeholder="asset" type="text" name="asset_id" />
+                <input placeholder="amount" type="number" name="amount" />
                 <input type="submit" value="Fund predicate" />
             </ActionForm>
         </article>

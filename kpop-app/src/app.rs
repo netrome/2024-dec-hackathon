@@ -5,6 +5,7 @@ use leptos_router::{
     StaticSegment,
 };
 
+use crate::comp::claims::Claims;
 use crate::comp::fund::FundForm;
 use crate::comp::predicate_balances::PredicateBalances;
 use crate::comp::send_amount::SendForm;
@@ -64,5 +65,6 @@ fn HomePage() -> impl IntoView {
         <WalletInfo />
         <SendForm />
         <FundForm />
+        <Claims />
     }
 }

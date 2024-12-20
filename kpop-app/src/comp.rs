@@ -1,5 +1,6 @@
 pub mod balance_table;
 pub mod base;
+pub mod claims;
 pub mod fund;
 pub mod predicate_balances;
 pub mod send_amount;

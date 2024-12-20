@@ -21,9 +21,9 @@ pub fn make_claim() -> impl IntoView {
 
 #[server]
 async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<u64, ServerFnError> {
-    use crate::shared::SharedKpop;
+    use crate::server::KpopServer;
 
-    let kp: SharedKpop = use_context().expect("should be able to get shared Kpop instance");
+    let kp: KpopServer = use_context().expect("should be able to get shared Kpop instance");
 
     let asset_id = if asset_id.trim().is_empty() {
         None

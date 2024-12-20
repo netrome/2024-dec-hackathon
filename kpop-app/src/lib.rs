@@ -11,7 +11,7 @@ pub fn hydrate() {
 }
 
 #[cfg(feature = "ssr")]
-pub mod shared;
+pub mod server;
 
 #[cfg(feature = "ssr")]
 pub mod args;

@@ -11,7 +11,7 @@ async fn main() {
     use kpop_app::app::*;
 
     let args = kpop_app::args::Args::parse();
-    let shared_kpop = kpop_app::shared::SharedKpop::from_args(&args).await;
+    let shared_kpop = kpop_app::server::KpopServer::from_args(&args).await;
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;

@@ -102,16 +102,16 @@ pub fn claim_row(
 
 #[server]
 async fn get_claims() -> Result<Vec<model::Claim>, ServerFnError> {
-    use crate::shared::SharedKpop;
-    let kp: SharedKpop = use_context().expect("should be able to get shared Kpop instance");
+    use crate::server::KpopServer;
+    let kp: KpopServer = use_context().expect("should be able to get shared Kpop instance");
 
     Ok(kp.get_claims().await)
 }
 
 #[server]
 async fn disprove_claim(id: u64) -> Result<(), ServerFnError> {
-    use crate::shared::SharedKpop;
-    let kp: SharedKpop = use_context().expect("should be able to get shared Kpop instance");
+    use crate::server::KpopServer;
+    let kp: KpopServer = use_context().expect("should be able to get shared Kpop instance");
 
     kp.disprove_claim(id).await;
 

@@ -33,8 +33,8 @@ pub fn balance_table(balances: HashMap<String, u64>) -> impl IntoView {
 
 #[server]
 async fn get_predicate_balances() -> Result<HashMap<String, u64>, ServerFnError> {
-    use crate::shared::SharedKpop;
-    let kp: SharedKpop = use_context().expect("should be able to get shared Kpop instance");
+    use crate::server::KpopServer;
+    let kp: KpopServer = use_context().expect("should be able to get shared Kpop instance");
 
     Ok(kp.predicate_balance().await)
 }

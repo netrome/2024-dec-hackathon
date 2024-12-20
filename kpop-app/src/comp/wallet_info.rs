@@ -36,8 +36,8 @@ fn kpop_info(kpop_info: model::KpopInfo) -> impl IntoView {
 
 #[server]
 async fn get_wallet_info() -> Result<model::KpopInfo, ServerFnError> {
-    use crate::shared::SharedKpop;
-    let kp: SharedKpop = use_context().expect("should be able to get shared Kpop instance");
+    use crate::server::KpopServer;
+    let kp: KpopServer = use_context().expect("should be able to get shared Kpop instance");
 
     let base_address = kp.wallet_address().await;
     let claimable_address = kp.predicate_address().await;

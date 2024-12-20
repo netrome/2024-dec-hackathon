@@ -8,11 +8,11 @@ use crate::args;
 use crate::model;
 
 #[derive(Clone, Debug)]
-pub struct SharedKpop {
+pub struct KpopServer {
     inner: Arc<kpop::Kpop>,
 }
 
-impl SharedKpop {
+impl KpopServer {
     pub async fn from_args(args: &args::Args) -> Self {
         let provider = Provider::connect(&args.provider_url)
             .await
@@ -35,7 +35,7 @@ impl SharedKpop {
     }
 }
 
-impl SharedKpop {
+impl KpopServer {
     pub async fn wallet_balance(&self) -> HashMap<String, u64> {
         self.inner.wallet_balance().await
     }

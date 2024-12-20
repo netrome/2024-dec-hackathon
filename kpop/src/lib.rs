@@ -166,14 +166,6 @@ impl Kpop {
     }
 
     pub async fn claim(&self, owner: Address, asset_id: Option<AssetId>, amount: u64) -> u64 {
-        //let kp = self.clone();
-
-        //let res =
-        //    tokio::task::spawn_local(
-        //        async move { kp.claim_not_send(owner, asset_id, amount).await },
-        //    );
-
-        //res.await.expect("should be able to join")
         self.claim_not_send(owner, asset_id, amount).await
     }
 
@@ -193,13 +185,15 @@ impl Kpop {
 
         let output_coins = predicate.get_asset_outputs_for_amount(predicate.address(), asset_id, 0);
 
+        let contract_instance = self.contract_instance().await;
+
         let claim_id = self
             .script_instance(owner)
             .await
             .main(self.wallet.address(), 10_000_000, amount, asset_id.into())
             .with_inputs(input_coins)
             .with_outputs(output_coins)
-            .with_contracts(&[&self.contract_instance().await])
+            .with_contracts(&[&contract_instance])
             .with_tx_policies(TxPolicies::default().with_script_gas_limit(10_000_000))
             .call()
             .await

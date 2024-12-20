@@ -1,5 +1,6 @@
 use leptos::prelude::*;
 
+#[cfg(feature = "ssr")]
 use crate::server::KpopServer;
 
 #[component]
@@ -56,6 +57,7 @@ async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<(),
     Ok(())
 }
 
+#[cfg(feature = "ssr")]
 async fn claim_funds_bluh(kp: KpopServer, owner: String, asset_id: Option<String>, amount: u64) {
     kp.claim(&owner, asset_id, amount).await;
 }

@@ -35,7 +35,7 @@ async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<(),
         Some(asset_id.trim().to_string())
     };
 
-    claim_funds_bluh(kp.clone(), owner.clone(), asset_id.clone(), amount).await;
+    kp.claim(&owner, asset_id.clone(), amount).await;
 
     let claim_id = 0;
 
@@ -54,10 +54,7 @@ async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<(),
         block_height,
     };
 
-    Ok(())
-}
+    kp.insert_active_claim(claim);
 
-#[cfg(feature = "ssr")]
-async fn claim_funds_bluh(kp: KpopServer, owner: String, asset_id: Option<String>, amount: u64) {
-    kp.claim(&owner, asset_id, amount).await;
+    Ok(())
 }

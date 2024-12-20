@@ -25,28 +25,24 @@ fn kpop_info(kpop_info: model::KpopInfo) -> impl IntoView {
             <header>
                 <h3>"My info"</h3>
             </header>
-            <ul>
-                <li>
+            <div>
+                <p>
                     <b class="float-left">"Base address: "</b>
-                    <br />
-                    <span class="float-right">{kpop_info.base_address}</span>
-                </li>
-                <li>
-                    <b class="float-left">"Claimable address "</b>
-                    <br />
-                    <span class="float-right">{kpop_info.claimable_address}</span>
-                </li>
-                <li>
+                    <span class="">{kpop_info.base_address}</span>
+                </p>
+                <p>
+                    <b class="float-left">"Claimable address: "</b>
+                    <span class="">{kpop_info.claimable_address}</span>
+                </p>
+                <p>
                     <b class="float-left">"Provider url: "</b>
-                    <br />
-                    <span class="float-right">{kpop_info.provider_url}</span>
-                </li>
-                <li>
+                    <span class="">{kpop_info.provider_url}</span>
+                </p>
+                <p>
                     <b class="float-left">"Claims contract id: "</b>
-                    <br />
-                    <span class="float-right">{kpop_info.contract_id}</span>
-                </li>
-            </ul>
+                    <span class="">{kpop_info.contract_id}</span>
+                </p>
+            </div>
         </article>
     }
 }

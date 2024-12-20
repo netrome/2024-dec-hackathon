@@ -43,7 +43,7 @@ pub fn App() -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/kpop-app.css"/>
 
         // sets the document title
-        <Title text="Welcome to Leptos"/>
+        <Title text="Kpop wallet"/>
 
         // content for this welcome page
         <Router>
@@ -60,7 +60,10 @@ pub fn App() -> impl IntoView {
 #[component]
 fn HomePage() -> impl IntoView {
     view! {
-        <h1>"KPOP WALLET"</h1>
+        <article>
+            <h1>"KPOP WALLET"</h1>
+            <p><i>"- Never lose your funds."</i></p>
+        </article>
         <div class="grid">
             <div>
                 <WalletInfo />

@@ -6,6 +6,8 @@ use leptos_router::{
 };
 
 use crate::comp::fund::FundForm;
+use crate::comp::predicate_balances::PredicateBalances;
+use crate::comp::wallet_balances::WalletBalances;
 use crate::comp::wallet_info::WalletInfo;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -54,12 +56,10 @@ pub fn App() -> impl IntoView {
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
-    let count = RwSignal::new(0);
-    let on_click = move |_| *count.write() += 1;
-
     view! {
         <h1>"KPOP WALLET!"</h1>
-        <button on:click=on_click>"Click Me: " {count}</button>
+        <WalletBalances />
+        <PredicateBalances />
         <WalletInfo />
         <FundForm />
     }

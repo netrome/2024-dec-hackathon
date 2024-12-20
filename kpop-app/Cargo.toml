@@ -16,12 +16,12 @@ leptos_meta = { version = "0.7.0" }
 tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 tower = { version = "0.4", optional = true }
 tower-http = { version = "0.5", features = ["fs"], optional = true }
-wasm-bindgen = "=0.2.96"
+wasm-bindgen = "=0.2.99"
 thiserror = "1"
 http = "1"
 
 clap = { version = "4.5.23", features = ["derive", "env"], optional = true }
-fuels = "0.66.2"
+fuels = { version = "0.66.2", optional = true }
 kpop = { path = "../kpop", optional = true }
 
 [features]
@@ -34,6 +34,7 @@ ssr = [
     "dep:leptos_axum",
     "dep:clap",
     "dep:kpop",
+    "dep:fuels",
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",

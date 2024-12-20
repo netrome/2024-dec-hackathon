@@ -2,6 +2,7 @@ pub mod balance_table;
 pub mod base;
 pub mod claims;
 pub mod fund;
+pub mod make_claim;
 pub mod predicate_balances;
 pub mod send_amount;
 pub mod theme_switch;

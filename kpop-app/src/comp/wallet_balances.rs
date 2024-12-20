@@ -11,12 +11,13 @@ pub fn wallet_balances() -> impl IntoView {
                 view! { <p>"Uh oh - we got an error"</p> }
             }>
                 <article>
-                <header>
-                    <h3>"Non-claimable balance"</h3>
-                </header>
-                {move || {
-                    info.get().map(|res| res.map(|balances| view! { <BalanceTable balances/> }))
-                }}
+                    <header>
+                        <h3>"Non-claimable balance"</h3>
+                    </header>
+                    {move || {
+                        info.get()
+                            .map(|res| res.map(|balances| view! { <BalanceTable balances /> }))
+                    }}
                 </article>
             </ErrorBoundary>
         </Suspense>
@@ -27,9 +28,7 @@ pub fn wallet_balances() -> impl IntoView {
 pub fn balance_table(balances: HashMap<String, u64>) -> impl IntoView {
     let s = format!("{balances:?}");
 
-    view! {
-        <p>{s}</p>
-    }
+    view! { <p>{s}</p> }
 }
 
 #[server]

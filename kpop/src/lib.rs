@@ -166,6 +166,22 @@ impl Kpop {
     }
 
     pub async fn claim(&self, owner: Address, asset_id: Option<AssetId>, amount: u64) -> u64 {
+        let kp = self.clone();
+
+        let res =
+            tokio::task::spawn_local(
+                async move { kp.claim_not_send(owner, asset_id, amount).await },
+            );
+
+        res.await.expect("should be able to join")
+    }
+
+    pub async fn claim_not_send(
+        &self,
+        owner: Address,
+        asset_id: Option<AssetId>,
+        amount: u64,
+    ) -> u64 {
         let asset_id =
             asset_id.unwrap_or_else(|| self.wallet.provider().unwrap().base_asset_id().clone());
         let predicate = self.predicate(owner).await;

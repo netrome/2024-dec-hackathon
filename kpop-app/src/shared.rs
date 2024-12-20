@@ -99,8 +99,13 @@ impl SharedKpop {
         self.inner.fulfill_claim(claim_id).await
     }
 
-    pub async fn claim(&self, owner: Address, asset_id: Option<AssetId>, amount: u64) -> u64 {
-        self.inner.claim(owner, asset_id, amount).await
+    pub async fn claim(&self, owner: &str, asset_id: Option<String>, amount: u64) -> u64 {
+        let owner = Bech32Address::from_str(owner).expect("should be able to parse address");
+
+        let asset_id =
+            asset_id.map(|s| AssetId::from_str(&s).expect("should be able to parse asset ID"));
+
+        self.inner.claim(owner.into(), asset_id, amount).await
     }
 }
 

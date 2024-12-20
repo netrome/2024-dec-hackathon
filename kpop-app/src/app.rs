@@ -7,6 +7,7 @@ use leptos_router::{
 
 use crate::comp::claims::Claims;
 use crate::comp::fund::FundForm;
+use crate::comp::make_claim::MakeClaim;
 use crate::comp::predicate_balances::PredicateBalances;
 use crate::comp::send_amount::SendForm;
 use crate::comp::wallet_balances::WalletBalances;
@@ -60,6 +61,7 @@ pub fn App() -> impl IntoView {
 fn HomePage() -> impl IntoView {
     view! {
         <h1>"KPOP WALLET!"</h1>
+        <MakeClaim />
         <WalletBalances />
         <PredicateBalances />
         <WalletInfo />

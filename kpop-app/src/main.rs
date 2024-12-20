@@ -5,6 +5,7 @@ async fn main() {
     use leptos::logging::log;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
+    use tower_http::services::ServeDir;
 
     use kpop_app;
     use kpop_app::app::*;
@@ -19,6 +20,7 @@ async fn main() {
     let routes = generate_route_list(App);
 
     let app = Router::new()
+        .nest_service("/static", ServeDir::new("./static"))
         .leptos_routes_with_context(
             &leptos_options,
             routes,

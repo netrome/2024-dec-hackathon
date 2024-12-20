@@ -254,7 +254,7 @@ async fn get_script_bytecode_hash(
     hash
 }
 
-mod claimable_predicate {
+pub mod claimable_predicate {
     use fuels::prelude::*;
     abigen!(Predicate(
         name = "Claimable",
@@ -262,7 +262,7 @@ mod claimable_predicate {
     ));
 }
 
-mod claims_contract {
+pub mod claims_contract {
     use fuels::prelude::*;
 
     abigen!(Contract(
@@ -271,7 +271,7 @@ mod claims_contract {
     ));
 }
 
-mod make_claim_script {
+pub mod make_claim_script {
     use fuels::prelude::*;
 
     abigen!(Script(

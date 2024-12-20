@@ -23,6 +23,7 @@ http = "1"
 clap = { version = "4.5.23", features = ["derive", "env"], optional = true }
 fuels = { version = "0.66.2", optional = true }
 kpop = { path = "../kpop", optional = true }
+serde = { version = "1.0.216", features = ["derive"] }
 
 [features]
 hydrate = ["leptos/hydrate"]

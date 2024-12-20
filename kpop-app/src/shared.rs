@@ -1,10 +1,11 @@
 use std::sync::Arc;
 use std::{collections::HashMap, str::FromStr as _};
 
-use fuels::{crypto::SecretKey, prelude::*, tx::TxId};
+use fuels::{crypto::SecretKey, prelude::*};
 use kpop;
 
 use crate::args;
+use crate::model;
 
 #[derive(Clone, Debug)]
 pub struct SharedKpop {
@@ -43,16 +44,24 @@ impl SharedKpop {
         self.inner.predicate_balance().await
     }
 
-    pub async fn get_claims(&self) -> Vec<kpop::claims_contract::Claim> {
-        self.inner.get_claims().await
+    pub async fn get_claims(&self) -> Vec<model::Claim> {
+        self.inner
+            .get_claims()
+            .await
+            .into_iter()
+            .map(model::Claim::from)
+            .collect()
     }
 
-    pub async fn predicate_address(&self) -> Bech32Address {
-        self.inner.predicate_address().await
+    pub async fn predicate_address(&self) -> String {
+        self.inner.predicate_address().await.to_string()
     }
 
-    pub async fn fund_predicate(&self, asset_id: Option<AssetId>, amount: u64) -> TxId {
-        self.inner.fund_predicate(asset_id, amount).await
+    pub async fn fund_predicate(&self, asset_id: Option<AssetId>, amount: u64) -> String {
+        self.inner
+            .fund_predicate(asset_id, amount)
+            .await
+            .to_string()
     }
 
     pub async fn send_to(
@@ -60,8 +69,11 @@ impl SharedKpop {
         address: &Bech32Address,
         asset_id: Option<AssetId>,
         amount: u64,
-    ) -> TxId {
-        self.inner.send_to(address, asset_id, amount).await
+    ) -> String {
+        self.inner
+            .send_to(address, asset_id, amount)
+            .await
+            .to_string()
     }
 
     pub async fn disprove_claim(&self, claim_id: u64) {
@@ -74,5 +86,25 @@ impl SharedKpop {
 
     pub async fn claim(&self, owner: Address, asset_id: Option<AssetId>, amount: u64) -> u64 {
         self.inner.claim(owner, asset_id, amount).await
+    }
+}
+
+impl From<kpop::claims_contract::Claim> for model::Claim {
+    fn from(value: kpop::claims_contract::Claim) -> Self {
+        let amount = value.amount;
+        let claim_id = value.id;
+        let owner = value.owner.to_string();
+        let recipient = value.recipient.to_string();
+        let asset_id = value.asset.to_string();
+        let block_height = value.block_height;
+
+        Self {
+            amount,
+            claim_id,
+            owner,
+            recipient,
+            block_height,
+            asset_id,
+        }
     }
 }

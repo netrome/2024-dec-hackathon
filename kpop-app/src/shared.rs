@@ -79,14 +79,14 @@ impl SharedKpop {
             .to_string()
     }
 
-    pub async fn send_to(
-        &self,
-        address: &Bech32Address,
-        asset_id: Option<AssetId>,
-        amount: u64,
-    ) -> String {
+    pub async fn send_to(&self, address: &str, asset_id: Option<String>, amount: u64) -> String {
+        let address = Bech32Address::from_str(address).expect("should be able to parse address");
+
+        let asset_id =
+            asset_id.map(|s| AssetId::from_str(&s).expect("should be able to parse asset ID"));
+
         self.inner
-            .send_to(address, asset_id, amount)
+            .send_to(&address, asset_id, amount)
             .await
             .to_string()
     }

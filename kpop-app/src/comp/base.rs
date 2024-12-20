@@ -1,4 +1,4 @@
-use leptos::{children, prelude::*};
+use leptos::prelude::*;
 
 #[component]
 pub fn base(children: ChildrenFn) -> impl IntoView {

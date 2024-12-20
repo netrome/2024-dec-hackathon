@@ -7,6 +7,7 @@ use leptos_router::{
 
 use crate::comp::fund::FundForm;
 use crate::comp::predicate_balances::PredicateBalances;
+use crate::comp::send_amount::SendForm;
 use crate::comp::wallet_balances::WalletBalances;
 use crate::comp::wallet_info::WalletInfo;
 
@@ -61,6 +62,7 @@ fn HomePage() -> impl IntoView {
         <WalletBalances />
         <PredicateBalances />
         <WalletInfo />
+        <SendForm />
         <FundForm />
     }
 }

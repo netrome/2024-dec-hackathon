@@ -6,17 +6,15 @@ pub fn wallet_info() -> impl IntoView {
     let info = Resource::new(|| (), |_| get_wallet_info());
 
     view! {
-        <Suspense fallback = || view!{<p>"Loading..."</p>}>
-        <ErrorBoundary
-            fallback = |_errors| {
-                view! {<p>"Uh oh - we got an error"</p>}
-            }
-        >
-            <p>"yo"</p>
-            {
-                move || info.get().map(|res| res.map(|kpop_info| view!{<KpopInfo kpop_info/>}))
-            }
-        </ErrorBoundary>
+        <Suspense fallback=|| view! { <p>"Loading..."</p> }>
+            <ErrorBoundary fallback=|_errors| {
+                view! { <p>"Uh oh - we got an error"</p> }
+            }>
+                <p>"yo"</p>
+                {move || {
+                    info.get().map(|res| res.map(|kpop_info| view! { <KpopInfo kpop_info /> }))
+                }}
+            </ErrorBoundary>
         </Suspense>
     }
 }
@@ -40,6 +38,7 @@ fn kpop_info(kpop_info: model::KpopInfo) -> impl IntoView {
 async fn get_wallet_info() -> Result<model::KpopInfo, ServerFnError> {
     use crate::shared::SharedKpop;
     let kp: SharedKpop = use_context().expect("should be able to get shared Kpop instance");
+
     let base_address = kp.wallet_address().await;
     let claimable_address = kp.predicate_address().await;
     let contract_id = kp.contract_id();

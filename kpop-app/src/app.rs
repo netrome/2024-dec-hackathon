@@ -5,6 +5,7 @@ use leptos_router::{
     StaticSegment,
 };
 
+use crate::comp::fund::FundForm;
 use crate::comp::wallet_info::WalletInfo;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -60,5 +61,6 @@ fn HomePage() -> impl IntoView {
         <h1>"KPOP WALLET!"</h1>
         <button on:click=on_click>"Click Me: " {count}</button>
         <WalletInfo />
+        <FundForm />
     }
 }

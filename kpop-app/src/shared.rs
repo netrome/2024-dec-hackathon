@@ -69,7 +69,10 @@ impl SharedKpop {
             .collect()
     }
 
-    pub async fn fund_predicate(&self, asset_id: Option<AssetId>, amount: u64) -> String {
+    pub async fn fund_predicate(&self, asset_id: Option<String>, amount: u64) -> String {
+        let asset_id =
+            asset_id.map(|s| AssetId::from_str(&s).expect("should be able to parse asset ID"));
+
         self.inner
             .fund_predicate(asset_id, amount)
             .await

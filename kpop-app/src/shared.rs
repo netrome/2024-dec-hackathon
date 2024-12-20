@@ -44,6 +44,22 @@ impl SharedKpop {
         self.inner.predicate_balance().await
     }
 
+    pub async fn predicate_address(&self) -> String {
+        self.inner.predicate_address().await.to_string()
+    }
+
+    pub async fn wallet_address(&self) -> String {
+        self.inner.wallet.address().to_string()
+    }
+
+    pub fn contract_id(&self) -> String {
+        self.inner.contract_id.to_string()
+    }
+
+    pub fn provider_url(&self) -> String {
+        self.inner.wallet.provider().unwrap().url().to_string()
+    }
+
     pub async fn get_claims(&self) -> Vec<model::Claim> {
         self.inner
             .get_claims()
@@ -51,10 +67,6 @@ impl SharedKpop {
             .into_iter()
             .map(model::Claim::from)
             .collect()
-    }
-
-    pub async fn predicate_address(&self) -> String {
-        self.inner.predicate_address().await.to_string()
     }
 
     pub async fn fund_predicate(&self, asset_id: Option<AssetId>, amount: u64) -> String {

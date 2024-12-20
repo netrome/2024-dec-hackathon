@@ -4,7 +4,8 @@ use crate::model;
 
 #[component]
 pub fn claims() -> impl IntoView {
-    let our_claims = Resource::new(|| (), |_| get_claims());
+    let claims_on_user = Resource::new(|| (), |_| get_claims());
+    let user_claims = Resource::new(|| (), |_| get_user_claims());
 
     view! {
         <Suspense fallback=|| view! { <p>"Loading..."</p> }>
@@ -16,7 +17,17 @@ pub fn claims() -> impl IntoView {
                         <h3>"Claims on my balance"</h3>
                     </header>
                     {move || {
-                        our_claims
+                        claims_on_user
+                            .get()
+                            .map(|res| res.map(|claims| view! { <ClaimsTable claims /> }))
+                    }}
+                </article>
+                <article>
+                    <header>
+                        <h3>"My claims"</h3>
+                    </header>
+                    {move || {
+                        user_claims
                             .get()
                             .map(|res| res.map(|claims| view! { <ClaimsTable claims /> }))
                     }}
@@ -106,6 +117,14 @@ async fn get_claims() -> Result<Vec<model::Claim>, ServerFnError> {
     let kp: KpopServer = use_context().expect("should be able to get shared Kpop instance");
 
     Ok(kp.get_claims().await)
+}
+
+#[server]
+async fn get_user_claims() -> Result<Vec<model::Claim>, ServerFnError> {
+    use crate::server::KpopServer;
+    let kp: KpopServer = use_context().expect("should be able to get shared Kpop instance");
+
+    Ok(kp.get_active_claims())
 }
 
 #[server]

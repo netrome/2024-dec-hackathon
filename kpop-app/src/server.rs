@@ -1,4 +1,5 @@
-use std::sync::Arc;
+use std::collections::BTreeMap;
+use std::sync::{Arc, RwLock};
 use std::{collections::HashMap, str::FromStr as _};
 
 use fuels::{crypto::SecretKey, prelude::*};
@@ -10,6 +11,7 @@ use crate::model;
 #[derive(Clone, Debug)]
 pub struct KpopServer {
     inner: Arc<kpop::Kpop>,
+    active_claims: Arc<RwLock<BTreeMap<u64, model::Claim>>>,
 }
 
 impl KpopServer {
@@ -31,7 +33,12 @@ impl KpopServer {
         };
         let inner = Arc::new(kp);
 
-        Self { inner }
+        let active_claims = Arc::new(RwLock::new(BTreeMap::new()));
+
+        Self {
+            inner,
+            active_claims,
+        }
     }
 }
 
@@ -106,6 +113,45 @@ impl KpopServer {
             asset_id.map(|s| AssetId::from_str(&s).expect("should be able to parse asset ID"));
 
         self.inner.claim(owner.into(), asset_id, amount).await
+    }
+
+    pub async fn block_height(&self) -> u32 {
+        self.inner
+            .wallet
+            .provider()
+            .unwrap()
+            .latest_block_height()
+            .await
+            .expect("should be able to get block height")
+    }
+
+    pub fn base_asset_id(&self) -> String {
+        self.inner
+            .wallet
+            .provider()
+            .unwrap()
+            .base_asset_id()
+            .to_string()
+    }
+
+    pub fn insert_active_claim(&self, claim: model::Claim) {
+        self.active_claims
+            .write()
+            .unwrap()
+            .insert(claim.claim_id, claim);
+    }
+
+    pub fn get_active_claims(&self) -> Vec<model::Claim> {
+        self.active_claims
+            .read()
+            .unwrap()
+            .values()
+            .cloned()
+            .collect()
+    }
+
+    pub fn remove_active_claim(&self, claim_id: u64) {
+        self.active_claims.write().unwrap().remove(&claim_id);
     }
 }
 

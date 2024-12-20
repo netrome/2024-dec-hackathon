@@ -20,7 +20,8 @@ pub fn make_claim() -> impl IntoView {
 }
 
 #[server]
-async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<u64, ServerFnError> {
+async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<(), ServerFnError> {
+    use crate::model;
     use crate::server::KpopServer;
 
     let kp: KpopServer = use_context().expect("should be able to get shared Kpop instance");
@@ -33,10 +34,32 @@ async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<u64
 
     let (tx, rx) = tokio::sync::oneshot::channel();
 
+    let owner_clone = owner.clone();
+    let asset_id_clone = asset_id.clone();
+    let kp_clone = kp.clone();
     leptos::task::spawn_local(async move {
-        let res = kp.claim(&owner, asset_id, amount).await;
+        let res = kp_clone.claim(&owner_clone, asset_id_clone, amount).await;
         tx.send(res).expect("should be able to send result");
     });
 
-    Ok(rx.await.expect("should be able to receive result"))
+    let claim_id = rx.await.expect("should be able to receive result");
+
+    let recipient = kp.wallet_address().await;
+
+    let block_height = kp.block_height().await;
+
+    let asset_id = asset_id.unwrap_or(kp.base_asset_id());
+
+    let claim = model::Claim {
+        claim_id,
+        owner,
+        recipient,
+        asset_id,
+        amount,
+        block_height,
+    };
+
+    kp.insert_active_claim(claim);
+
+    Ok(())
 }

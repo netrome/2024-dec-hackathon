@@ -109,6 +109,65 @@ impl SharedKpop {
     }
 }
 
+impl SharedKpop {
+    pub fn spawn_local_clone(&self) -> LocalSharedKpopHandle {
+        let (claim_requests_tx, claim_requests_rx) = tokio::sync::mpsc::channel(128);
+
+        let local_shared_kpop = LocalSharedKpop {
+            inner: self.clone(),
+            claim_requests: claim_requests_rx,
+        };
+
+        leptos::task::spawn_local(local_shared_kpop.run());
+
+        LocalSharedKpopHandle {
+            claim_requests: claim_requests_tx,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct LocalSharedKpop {
+    inner: SharedKpop,
+    claim_requests: tokio::sync::mpsc::Receiver<(
+        String,
+        Option<String>,
+        u64,
+        tokio::sync::oneshot::Sender<u64>,
+    )>,
+}
+
+impl LocalSharedKpop {
+    pub async fn run(mut self) {
+        while let Some((owner, asset_id, amount, tx)) = self.claim_requests.recv().await {
+            let res = self.inner.claim(&owner, asset_id, amount).await;
+            tx.send(res).expect("failed to send result");
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct LocalSharedKpopHandle {
+    claim_requests: tokio::sync::mpsc::Sender<(
+        String,
+        Option<String>,
+        u64,
+        tokio::sync::oneshot::Sender<u64>,
+    )>,
+}
+
+impl LocalSharedKpopHandle {
+    pub async fn claim(&self, owner: &str, asset_id: Option<String>, amount: u64) -> u64 {
+        let (tx, rx) = tokio::sync::oneshot::channel();
+        self.claim_requests
+            .send((owner.to_string(), asset_id, amount, tx))
+            .await
+            .expect("should be able to send request");
+
+        rx.await.expect("should receive value")
+    }
+}
+
 impl From<kpop::claims_contract::Claim> for model::Claim {
     fn from(value: kpop::claims_contract::Claim) -> Self {
         let amount = value.amount;

@@ -26,6 +26,7 @@ async fn main() {
             routes,
             move || {
                 provide_context(shared_kpop.clone());
+                provide_context(local_kpop_handle.clone());
             },
             {
                 let leptos_options = leptos_options.clone();

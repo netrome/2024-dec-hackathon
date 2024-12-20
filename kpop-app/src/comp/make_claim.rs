@@ -20,7 +20,7 @@ pub fn make_claim() -> impl IntoView {
 }
 
 #[server]
-async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<(), ServerFnError> {
+async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<u64, ServerFnError> {
     use crate::shared::SharedKpop;
 
     let kp: SharedKpop = use_context().expect("should be able to get shared Kpop instance");
@@ -31,7 +31,12 @@ async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<(),
         Some(asset_id.trim().to_string())
     };
 
-    kp.claim(&owner, asset_id, amount).await;
+    let (tx, rx) = tokio::sync::oneshot::channel();
 
-    Ok(())
+    leptos::task::spawn_local(async move {
+        let res = kp.claim(&owner, asset_id, amount).await;
+        tx.send(res).expect("should be able to send result");
+    });
+
+    Ok(rx.await.expect("should be able to receive result"))
 }

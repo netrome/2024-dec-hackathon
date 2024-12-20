@@ -166,14 +166,15 @@ impl Kpop {
     }
 
     pub async fn claim(&self, owner: Address, asset_id: Option<AssetId>, amount: u64) -> u64 {
-        let kp = self.clone();
+        //let kp = self.clone();
 
-        let res =
-            tokio::task::spawn_local(
-                async move { kp.claim_not_send(owner, asset_id, amount).await },
-            );
+        //let res =
+        //    tokio::task::spawn_local(
+        //        async move { kp.claim_not_send(owner, asset_id, amount).await },
+        //    );
 
-        res.await.expect("should be able to join")
+        //res.await.expect("should be able to join")
+        self.claim_not_send(owner, asset_id, amount).await
     }
 
     pub async fn claim_not_send(

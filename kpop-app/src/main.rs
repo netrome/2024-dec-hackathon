@@ -1,5 +1,5 @@
 #[cfg(feature = "ssr")]
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     use axum::Router;
     use leptos::logging::log;

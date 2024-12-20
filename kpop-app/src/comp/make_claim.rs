@@ -1,5 +1,7 @@
 use leptos::prelude::*;
 
+use crate::server::KpopServer;
+
 #[component]
 pub fn make_claim() -> impl IntoView {
     let claim_funds_action = ServerAction::<ClaimFunds>::new();
@@ -32,17 +34,9 @@ async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<(),
         Some(asset_id.trim().to_string())
     };
 
-    let (tx, rx) = tokio::sync::oneshot::channel();
+    claim_funds_bluh(kp.clone(), owner.clone(), asset_id.clone(), amount).await;
 
-    let owner_clone = owner.clone();
-    let asset_id_clone = asset_id.clone();
-    let kp_clone = kp.clone();
-    leptos::task::spawn_local(async move {
-        let res = kp_clone.claim(&owner_clone, asset_id_clone, amount).await;
-        tx.send(res).expect("should be able to send result");
-    });
-
-    let claim_id = rx.await.expect("should be able to receive result");
+    let claim_id = 0;
 
     let recipient = kp.wallet_address().await;
 
@@ -59,7 +53,9 @@ async fn claim_funds(owner: String, asset_id: String, amount: u64) -> Result<(),
         block_height,
     };
 
-    kp.insert_active_claim(claim);
-
     Ok(())
+}
+
+async fn claim_funds_bluh(kp: KpopServer, owner: String, asset_id: Option<String>, amount: u64) {
+    kp.claim(&owner, asset_id, amount).await;
 }
